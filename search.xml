@@ -18,13 +18,16 @@
     <title>学习</title>
     <url>/2021/02/21/%E5%AD%A6%E4%B9%A0/</url>
     <content><![CDATA[]]></content>
+      <tags>
+        <tag>java</tag>
+      </tags>
   </entry>
   <entry>
     <title>java</title>
     <url>/2021/02/21/java/</url>
     <content><![CDATA[]]></content>
       <categories>
-        <category>博客</category>
+        <category>编程语言</category>
       </categories>
       <tags>
         <tag>java</tag>
