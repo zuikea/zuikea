@@ -15,6 +15,18 @@
 ]]></content>
   </entry>
   <entry>
+    <title>CodeGym</title>
+    <url>/2021/02/21/CodeGym/</url>
+    <content><![CDATA[<p><a href="https://codegym.cc/">https://codegym.cc/</a><br>  在线学习Java网站，登录需要特殊环境，（谷歌机器人），用一个完整的故事来学习Java,里面有特别多的练习题，来学习Java相关的知识，通过升级的方式，来对应各个阶段的学习，分为免费版和付费版，免费版够用了。还可以开发自己的经典游戏，具体登录网站自己查看。<br>  遇到不会的还可以通过，帮助，或是练习题下方的讨论区，热心网友不少嘞，但要遵守纪律，不能发出具体答案。</p>
+]]></content>
+      <categories>
+        <category>编程语言</category>
+      </categories>
+      <tags>
+        <tag>java</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>ubuntu安装screen</title>
     <url>/2021/02/28/ubuntu%E5%AE%89%E8%A3%85screen/</url>
     <content><![CDATA[<p><strong>前要</strong><br>   $ ：表示是命令，输入 $ 后面的，$ 不需要输入，#也不需要</p>
@@ -52,18 +64,6 @@ $ screen -wipe       #检查当前所有的screen作业，并删除已经无法�
       </categories>
       <tags>
         <tag>ubuntu</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>CodeGym</title>
-    <url>/2021/02/21/CodeGym/</url>
-    <content><![CDATA[<p><a href="https://codegym.cc/">https://codegym.cc/</a><br>  在线学习Java网站，登录需要特殊环境，（谷歌机器人），用一个完整的故事来学习Java,里面有特别多的练习题，来学习Java相关的知识，通过升级的方式，来对应各个阶段的学习，分为免费版和付费版，免费版够用了。还可以开发自己的经典游戏，具体登录网站自己查看。<br>  遇到不会的还可以通过，帮助，或是练习题下方的讨论区，热心网友不少嘞，但要遵守纪律，不能发出具体答案。</p>
-]]></content>
-      <categories>
-        <category>编程语言</category>
-      </categories>
-      <tags>
-        <tag>java</tag>
       </tags>
   </entry>
 </search>
