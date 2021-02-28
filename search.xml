@@ -15,14 +15,6 @@
 ]]></content>
   </entry>
   <entry>
-    <title>学习</title>
-    <url>/2021/02/21/%E5%AD%A6%E4%B9%A0/</url>
-    <content><![CDATA[]]></content>
-      <tags>
-        <tag>java</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>ubuntu安装screen</title>
     <url>/2021/02/28/ubuntu%E5%AE%89%E8%A3%85screen/</url>
     <content><![CDATA[<p><strong>前要</strong><br>   $ ：表示是命令，输入 $ 后面的，$ 不需要输入，#也不需要</p>
