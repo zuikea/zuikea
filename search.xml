@@ -34,4 +34,44 @@
         <tag>java</tag>
       </tags>
   </entry>
+  <entry>
+    <title>ubuntu安装screen</title>
+    <url>/2021/02/28/ubuntu%E5%AE%89%E8%A3%85screen/</url>
+    <content><![CDATA[<p><strong>前要</strong><br>   $ ：表示是命令，输入 $ 后面的，$ 不需要输入，#也不需要</p>
+<p>   $   #查看当前操作系统是哪个发行版（ubuntu,红帽子……)</p>
+<hr>
+<p><strong>screen是什么</strong><br>   screen是linux下的一种多重视窗管理程序。在使用telnet或SSH远程登录linux时，如果连接非正常中断，重新连接时，系统将开一个新的session，无法恢复原来的session.screen命令可以解决这个问题</p>
+<hr>
+<p><strong>作用</strong><br>   使用telnet或SSH远程登录linux时，如果连接非正常中断，重新连接时，系统将开一个新的session，无法恢复原来的session.screen命令可以解决这个问题</p>
+<hr>
+<p><strong>安装screen</strong></p>
+<pre><code>apt-get update           #系统更新，建议运行一下，以防不可用
+$ apt-get install screen
+</code></pre>
+<hr>
+<p><strong>常用的screen部分参数</strong></p>
+<pre><code>$ screen -v          #显示版本信息
+Screen version 4.06.02 (GNU) 23-Oct-17
+
+
+$ screen -ls         #显示当前所有的screen
+
+
+$ screen -r name     #恢复离线的screen作业
+如: screen -r bt   #建立一个名字叫做bt的作业，谁便定义
+
+
+$ screen -R name     #先试图恢复离线的作业。若找不到离线的作业，即建立新的screen作业,建议使用这个
+
+
+$ screen -wipe       #检查当前所有的screen作业，并删除已经无法使用的screen作业。(没用过，懒得删,🤪)
+</code></pre>
+]]></content>
+      <categories>
+        <category>Linux</category>
+      </categories>
+      <tags>
+        <tag>ubuntu</tag>
+      </tags>
+  </entry>
 </search>

@@ -5,12 +5,15 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Archive</title>
+    <title>ubuntu安装screen - Hexo</title>
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="google" content="notranslate" />
     <meta name="keywords" content="Fechin,"> 
-    
+    <meta name="description" content="前要   $ ：表示是命令，输入 $ 后面的，$ 不需要输入，#也不需要
+   $   #查看当前操作系统是哪个发行版（ubuntu,红帽子……)
+
+screen是什么   screen是linux,"> 
     <meta name="author" content="John Doe"> 
     <link rel="alternative" href="atom.xml" title="Hexo" type="application/atom+xml"> 
     <link rel="icon" href="/img/favicon.png"> 
@@ -33,51 +36,103 @@
 <body class="loading">
     <span id="config-title" style="display:none">Hexo</span>
     <div id="loader"></div>
-    <div id="single" class="page">
-    <div id="top">
-        <a class="iconfont icon-left image-icon" href="javascript:history.back()"></a>
-    </div>
-    <div class="section">
-        <div class="article">
-            <div class="main">
-                <div class="content">
-                    <div class="timeline">
-                      <h2 class="timeline-title">归档: 4篇</h2><hr>
-                      
-                      
-                        
-                          <h3 class="timeline-subtitle">2021</h3>
-                        
-                        <div class="timeline-item">
-                          <time>2021-02-28</time>
-                          <a target="_self" href="/2021/02/28/ubuntu%E5%AE%89%E8%A3%85screen/">ubuntu安装screen</a>
-                        </div>
-                      
-                        
-                        <div class="timeline-item">
-                          <time>2021-02-21</time>
-                          <a target="_self" href="/2021/02/21/%E5%AD%A6%E4%B9%A0/">学习</a>
-                        </div>
-                      
-                        
-                        <div class="timeline-item">
-                          <time>2021-02-21</time>
-                          <a target="_self" href="/2021/02/21/java/">java</a>
-                        </div>
-                      
-                        
-                        <div class="timeline-item">
-                          <time>2021-02-20</time>
-                          <a target="_self" href="/2021/02/20/hello-world/">Hello World</a>
-                        </div>
-                      
-                    </div>
-                </div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="iconfont icon-home image-icon" href="javascript:;" data-url="http://example.com"></a>
+    <div title="播放/暂停" class="iconfont icon-play"></div>
+    <h3 class="subtitle">ubuntu安装screen</h3>
+    <div class="social">
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="iconfont icon-scan" href="javascript:;"></a>
             </div>
+            <div id="qr"></div>
         </div>
     </div>
+    <div class="scrollbar"></div>
 </div>
 
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">ubuntu安装screen</h1>
+        <div class="stuff">
+            <span>二月 28, 2021</span>
+            
+  <ul class="post-tags-list" itemprop="keywords"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/ubuntu/" rel="tag">ubuntu</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <p><strong>前要</strong><br>   $ ：表示是命令，输入 $ 后面的，$ 不需要输入，#也不需要</p>
+<p>   $   #查看当前操作系统是哪个发行版（ubuntu,红帽子……)</p>
+<hr>
+<p><strong>screen是什么</strong><br>   screen是linux下的一种多重视窗管理程序。在使用telnet或SSH远程登录linux时，如果连接非正常中断，重新连接时，系统将开一个新的session，无法恢复原来的session.screen命令可以解决这个问题</p>
+<hr>
+<p><strong>作用</strong><br>   使用telnet或SSH远程登录linux时，如果连接非正常中断，重新连接时，系统将开一个新的session，无法恢复原来的session.screen命令可以解决这个问题</p>
+<hr>
+<p><strong>安装screen</strong></p>
+<pre><code>apt-get update           #系统更新，建议运行一下，以防不可用
+$ apt-get install screen
+</code></pre>
+<hr>
+<p><strong>常用的screen部分参数</strong></p>
+<pre><code>$ screen -v          #显示版本信息
+Screen version 4.06.02 (GNU) 23-Oct-17
+
+
+$ screen -ls         #显示当前所有的screen
+
+
+$ screen -r name     #恢复离线的screen作业
+如: screen -r bt   #建立一个名字叫做bt的作业，谁便定义
+
+
+$ screen -R name     #先试图恢复离线的作业。若找不到离线的作业，即建立新的screen作业,建议使用这个
+
+
+$ screen -wipe       #检查当前所有的screen作业，并删除已经无法使用的screen作业。(没用过，懒得删,🤪)
+</code></pre>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="true">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        
+                            <li title='0' data-url='http://link.hhtjim.com/163/425570952.mp3'></li>
+                        
+                    
+                        
+                            <li title='1' data-url='http://link.hhtjim.com/163/425570952.mp3'></li>
+                        
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+		data-enable='false'
+        data-ae='true'
+        data-ci='dccb1bc36c7068ea21bc'
+        data-cs='b35fcd2b113d3ff2424fdfd7b0c3d88f0fd509a1'
+        data-r='zuikea.github.io'
+        data-o='zuikea'
+        data-a='zuikea'
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
 </body>
 
 
