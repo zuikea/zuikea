@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>day01-复习、继承、抽象类、final关键字 - zblog</title>
+  </head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zblog</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">day01-复习、继承、抽象类、final关键字</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1625556172241"
+                  >2021-07-06 15:22</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1638069128044"
+                  >2021-11-28 11:12</time
+                ></span
+              >
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><nav class="table-of-contents"><ul><li><a href="#第一章面向对象回顾">第一章：面向对象回顾</a><ul><li><a href="#11-面向对象回顾类与对象">1.1 面向对象回顾–类与对象</a></li><li><a href="#12面向对象回顾匿名对象">1.2面向对象回顾–匿名对象</a></li></ul></li><li><a href="#第二章继承重点">第二章：继承【重点】</a><ul><li><a href="#21-继承的概念及作用">2.1 继承的概念及作用</a></li><li><a href="#22-继承的实现原理及成员访问">2.2 继承的实现原理及成员访问</a></li><li><a href="#23-子类覆盖父类成员">2.3 子类覆盖父类成员</a></li><li><a href="#24-继承的特点">2.4 继承的特点</a></li><li><a href="#25-this-和super关键字">2.5 this 和super关键字</a></li><li><a href="#26-this的穿透性和super的穿透性">2.6 this的穿透性和super的穿透性</a></li></ul></li><li><a href="#第三章抽象类重点">第三章：抽象类【重点】</a><ul><li><a href="#31-抽象类的概念">3.1 抽象类的概念</a></li><li><a href="#32-抽象类和抽象方法的定义">3.2 抽象类和抽象方法的定义</a></li><li><a href="#33-抽象类的特点">3.3 抽象类的特点</a></li></ul></li><li><a href="#第四章final关键字">第四章：final关键字</a><ul><li><a href="#41-final关键字概述">4.1 final关键字概述</a></li><li><a href="#42final的应用位置">4.2final的应用位置：</a></li><li><a href="#43-经验值分享">4.3 经验值分享：</a></li></ul></li></ul></nav><h1 id="第一章面向对象回顾">第一章：面向对象回顾</h1>
+<h3 id="11-面向对象回顾类与对象">1.1 面向对象回顾–类与对象</h3>
+<p>1).我们之前学过“类”，例如：Student类，它内部可以定义一些“变量、方法”，作用：它是一种“结构”，或者说是“自定义类型”这种类型是由很多的：变量、方法组成，是一种自	定义的、新的、复合类型。它用来表示一个“学员信息”，在程序中，它的一个“对象”主要用于“存储一个学员信息”。</p>
+<img width="1082" height="380" src="/_resources/050f23cd775a42f49956b1560aa528fd.jpg" class="jop-noMdConv" />
+<p>2).还有例如：Scanner类、Random类等，这些类都是提供了一些“功能(方法)”.</p>
+<p>3).类中可以定义：</p>
+<blockquote>
+<p>1).成员变量：存储“用户数据”；</p>
+<p>2).构造方法：初始化“成员变量”的(尤其是指全参构造)</p>
+<p>3).成员方法：get/set方法：操作成员变量；其它成员方法：用于描述此类的一个功能。</p>
+</blockquote>
+<p><strong>public class</strong> Student {</p>
+<p><a title="//1.xn--jsrq0qc7c28b" href="//1.xn--jsrq0qc7c28b">//1.成员属性</a></p>
+<p><strong>private</strong> String <strong>name</strong>;</p>
+<p><strong>private</strong> String <strong>sex</strong>;</p>
+<p><strong>private int</strong> <strong>age</strong>;</p>
+<p><em><a title="//2.xn--nfvu3by6hsy6b" href="//2.xn--nfvu3by6hsy6b">//2.构造方法</a></em></p>
+<p><strong>public</strong> Student() {</p>
+<p>}</p>
+<p><strong>public</strong> Student(String name, String sex, <strong>int</strong> age) {</p>
+<p><strong>this</strong>.<strong>name</strong> = name;</p>
+<p><strong>this</strong>.<strong>sex</strong> = sex;</p>
+<p><strong>this</strong>.<strong>age</strong> = age;</p>
+<p>}</p>
+<p><strong><a title="//3.xn--jsr123amyc91j" href="//3.xn--jsr123amyc91j">//3.成员方法</a></strong></p>
+<p><strong>public</strong> String getName() {</p>
+<p><strong>return</strong> <strong>name</strong>;</p>
+<p>}</p>
+<p><strong>public void</strong> setName(String name) {</p>
+<p><strong>this</strong>.<strong>name</strong> = name;</p>
+<p>}</p>
+<p><strong>public</strong> String getSex() {</p>
+<p><strong>return</strong> <strong>sex</strong>;</p>
+<p>}</p>
+<p><strong>public void</strong> setSex(String sex) {</p>
+<p><strong>this</strong>.<strong>sex</strong> = sex;</p>
+<p>}</p>
+<p><strong>public int</strong> getAge() {</p>
+<p><strong>return</strong> <strong>age</strong>;</p>
+<p>}</p>
+<p><strong>public void</strong> setAge(<strong>int</strong> age) {</p>
+<p><strong>this</strong>.<strong>age</strong> = age;     }</p>
+<p>}</p>
+<img width="711" height="340" src="/_resources/55fb682100ed405886e5a078c2c1947c.jpg" class="jop-noMdConv" />
+<h3 id="12面向对象回顾匿名对象">1.2面向对象回顾–匿名对象</h3>
+<p>1).什么是“匿名对象”：没有名字的对象！</p>
+<p>l以前都是有名字的对象：</p>
+<p>Student stu = new Student();</p>
+<p>Random rdm = new Random();</p>
+<p>stu和rdm就是两个对象的名字，创建完对象后，我们可以通过这个“对象名”反复的使用这个对象！！</p>
+<p>l某种情况下，为了书写方便，我们可以不为“对象”起名字，这样创建的对象就是：匿名对象，例如：</p>
+<p>new Student();</p>
+<p>2).“匿名对象”的主要的两个应用场景：</p>
+<p>1).对于某个类中的某个方法，只调用一次：</p>
+<p>例如：现有一个Student类：</p>
+<p>public class Student(){</p>
+<p>public void show(){</p>
+<p>System.out.println(“我在传智播客顺义校区！”);</p>
+<p>}</p>
+<p>public void show1(){</p>
+<p>}</p>
+<p>}</p>
+<p>//测试类：</p>
+<p>public class Demo01{</p>
+<p>public static void main(String[] args){</p>
+<p>//此时只想调用一下show()方法：</p>
+<p><a title="//1.xn--rutz60aoshxyx" href="//1.xn--rutz60aoshxyx">//1.正常调用</a>,但是，调用后，Student对象就没有用了，但会一直在内存中，占用内存空间</p>
+<p>Student stu = new Student();</p>
+<p>stu.show();</p>
+<p>//2.<strong>采用“匿名对象”的方式：</strong></p>
+<p>new Student().show();//show()方法调用完毕，Student对象立即成员垃圾，因为没有名字</p>
+<p>}</p>
+<p>}</p>
+<p>2).当调用方法，需要传入某个对象时：</p>
+<p><strong>public class</strong> Demo01 {</p>
+<p><strong>public static void</strong> main(String[] args) {</p>
+<p><em><a title="//1.xn--4gqvd70ltxc8xnizax7m359h" href="//1.xn--4gqvd70ltxc8xnizax7m359h">//1.创建一个学员对象</a></em></p>
+<p>Student stu1 = <strong>new</strong> Student();</p>
+<p>stu1.setName(<strong>“张三”</strong>);</p>
+<p>stu1.setSex(<strong>“男”</strong>);</p>
+<p>stu1.setAge(18);</p>
+<p>System.<em><strong>out</strong></em>.println(stu1.getName() + <strong>" , "</strong> + stu1.getSex() + <strong>" , "</strong> + stu1.getAge());</p>
+<p><em><a title="//2.xn--ciq1iq0bv8i8rkt6ft4bo20hfc5a" href="//2.xn--ciq1iq0bv8i8rkt6ft4bo20hfc5a">//2.记录第二个学员信息</a></em></p>
+<p>Student stu2 = <strong>new</strong> Student(<strong>“李四”</strong>, <strong>“女”</strong>, 19);</p>
+<p>System.<em><strong>out</strong></em>.println(stu2.getName() + <strong>" , "</strong> + stu2.getSex() + <strong>" , "</strong> + stu2.getAge());</p>
+<p>Student stu = <strong>new</strong> Student();</p>
+<p><em>print</em>(stu);<em>//传完后，在main()方法中Student对象已经没有用了，但会一直在内存中</em></p>
+<p>/采用"匿名对象"的方式</p>
+<p><em><strong><em>print</em>(<strong>new</strong> Student());</strong></em></p>
+<p>**/*<em><strong>/print()方法结束后，Student对象会立即成为垃圾。</strong></em>}</p>
+<p><strong>public static void</strong> print(Student stu){</p>
+<p>stu.show();</p>
+<p>}</p>
+<p>}</p>
+<h1 id="第二章继承重点">第二章：继承【重点】</h1>
+<p>面向对象语言的三大特征：封装、继承、多态</p>
+<h3 id="21-继承的概念及作用">2.1 继承的概念及作用</h3>
+<p>视频</p>
+<img width="800" height="436" src="/_resources/840b1252221142fc99478cc6e01a53e1.jpg" class="jop-noMdConv" />
+<h3 id="22-继承的实现原理及成员访问">2.2 继承的实现原理及成员访问</h3>
+<p>视频</p>
+<img width="721" height="357" src="/_resources/3e7b5dcf31fb412188a5659766d29c0e.jpg" class="jop-noMdConv" />
+<h3 id="23-子类覆盖父类成员">2.3 子类覆盖父类成员</h3>
+<img width="876" height="346" src="/_resources/db6dd9ee056b4793976f968ed55fb4ed.jpg" class="jop-noMdConv" />
+<p><strong>子类方法覆盖父类方法：重写</strong></p>
+<p><strong>1).子类重写父类方法要保证：</strong></p>
+<p><strong>1.返回值类型、方法名、形参列表必须跟父类相同；</strong></p>
+<p><strong>2.访问权限修饰符必须跟父类相同，或者比父类更宽！</strong></p>
+<h3 id="24-继承的特点">2.4 继承的特点</h3>
+<p><strong>1)父类的“私有成员(成员属性、成员方法)”可以被子类继承，但不能被访问！！！——就相当于不能被继承</strong></p>
+<p>public class Human{</p>
+<p>String name;</p>
+<p>private int money = 2000;</p>
+<p>}</p>
+<p>public class Student extends Human{</p>
+<p>}</p>
+<p>//测试类</p>
+<p>main(){</p>
+<p>Student stu = new Student();</p>
+<p>System.out.println(stu.name);//Ok的，可以被继承，也可以被访问；</p>
+<p>System.out.println(stu.money);//编译错误，可以被继承，但不能被子类访问——相当于不能被继承！</p>
+<p>}</p>
+<p>================================================================================================</p>
+<p>正常编写的父类：</p>
+<p>public class Human{</p>
+<p>private String name;</p>
+<p>private String sex;</p>
+<p>private int age;</p>
+<p>//提供公有的get/set方法</p>
+<p>public void setName(String name){</p>
+<p>this.name = name;</p>
+<p>}</p>
+<p>public String getName(){</p>
+<p>return this.name;</p>
+<p>}</p>
+<p>…</p>
+<p>}</p>
+<p>//子类</p>
+<p>public class Student extends Human{</p>
+<p>}</p>
+<p>//测试类：</p>
+<p>main(){</p>
+<p>Student stu = new Student();</p>
+<p>stu.setName(“张三”);</p>
+<p>}</p>
+<p><strong>2).Java只能“单继承”——不能同时继承多个父类：</strong></p>
+<p>class A{</p>
+<p>public void show(){</p>
+<p>System.out.println(“a”);</p>
+<p>}</p>
+<p>}</p>
+<p>class B{</p>
+<p>public void show(){</p>
+<p>System.out.println(“b”);</p>
+<p>}</p>
+<p>}</p>
+<p>class Zi extends A,B{//编译错误，不能同时继承两个类</p>
+<p>}</p>
+<p><strong>3).Java可以“多级继承”：</strong></p>
+<p>class A{}</p>
+<p>class B extends A{}</p>
+<p>class C extends B{}</p>
+<h3 id="25-this-和super关键字">2.5 this 和super关键字</h3>
+<p>1).this关键字：可以访问“本类”的：成员属性、成员方法、构造方法。</p>
+<p>1).访问“本类的”成员属性：通常不需要，但当：局部变量覆盖成员变量时，要访问被覆盖的成员变量，必须用this：</p>
+<img width="613" height="197" src="/_resources/4627cc0c533d4078922bc57c995dd364.jpg" class="jop-noMdConv" />
+<p>2).访问“本类的”其它成员方法：通常不需要：</p>
+<img width="511" height="204" src="/_resources/34819a709f9d4fb49a898fedfbcd8f44.jpg" class="jop-noMdConv" />
+<p>3).可以在一个构造方法中，调用另一个构造方法：必须用this()调用</p>
+<img width="484" height="394" src="/_resources/a3002faaf0664432a723e46f0c96f548.jpg" class="jop-noMdConv" />
+<p>2.super关键字：必须在“子类”中使用，可以在“子类中”访问“父类”的：成员属性、成员方法、构造方法</p>
+<p>1).访问“父类”的成员属性：通常不用，当：子类的“成员变量”覆盖父类的“成员变量”，要访问被覆盖的父类成员变量时，必须用 “super.父类成员变量”来访问：</p>
+<img width="495" height="228" src="/_resources/037939892cad4f2cb2ba350781e8d14e.jpg" class="jop-noMdConv" />
+<p>2).访问“父类”的成员方法：通常不用，当：子类的“成员方法”覆盖了父类的“成员方法”，要访问被覆盖的父类的成员方法时，必须用“super.方法名()”的形式访问：</p>
+<img width="563" height="296" src="/_resources/e9cd7adca4e24bd3b7b24d5d48ee1c12.jpg" class="jop-noMdConv" />
+<p>3).在子类的构造方法中，调用父类的构造方法：必须用super()</p>
+<img width="535" height="334" src="/_resources/52b4e26fdba04a3e8b3d872854e5f718.jpg" class="jop-noMdConv" />
+<p>=============================================================================</p>
+<p>注意：</p>
+<p>1).在“子类”中，每个构造方法的第一句话，都会隐式的添加：super();</p>
+<p>表示：调用父类“无参构造”。</p>
+<p>public class Fu{</p>
+<p>public Fu(){</p>
+<p>System.out.println(“a”);</p>
+<p>}</p>
+<p>public Fu(String name,int age){</p>
+<p>System.out.println(“b”);</p>
+<p>}</p>
+<p>}</p>
+<p>public class Zi extneds Fu{</p>
+<p>public Zi(){</p>
+<p>System.out.println(“c”);</p>
+<p>}</p>
+<p>public Zi(String name,int age){</p>
+<p>System.out.println(“d”);</p>
+<p>}</p>
+<p>}</p>
+<p>//测试类：</p>
+<p>main(){</p>
+<p>Zi z1 = new Zi();//ac</p>
+<p>Zi z2 = new Zi(“aa”,22);//ad</p>
+<p>}</p>
+<p>=======================================================================================</p>
+<p>通常的情况：子类需要定义跟父类“一样形式”的构造方法：</p>
+<img width="678" height="419" src="/_resources/910d7823b4a4479f8cf1b09f48897c92.jpg" class="jop-noMdConv" />
+<h3 id="26-this的穿透性和super的穿透性">2.6 this的穿透性和super的穿透性</h3>
+<img width="935" height="593" src="/_resources/09766e9ee6da4ee1ae262108723abdb5.jpg" class="jop-noMdConv" />
+<p>======================================================================================================================</p>
+<p>1).定义动物类：</p>
+<blockquote>
+<p>成员属性：名字、年龄、性别</p>
+<p>成员方法：吃饭、睡觉</p>
+</blockquote>
+<p>2).定义子类：猫类，继承动物类</p>
+<blockquote>
+<p>成员属性：颜色</p>
+<p>成员方法：捉老鼠</p>
+</blockquote>
+<p>3).定义子类：狗类，继承动物类</p>
+<blockquote>
+<p>成员属性：品种</p>
+<p>成员方法：看家护院</p>
+</blockquote>
+<p>4).定义测试类：</p>
+<blockquote>
+<p>1).创建一个“猫对象”：“花花”，2，“母”，“栗色”</p>
+<p>调用方法：吃饭、睡觉、捉老鼠</p>
+<p>2).创建一个“狗对象”：“小强”，4，“公”，“德国牧羊犬”</p>
+<p>调用方法：吃饭、谁、看家护院</p>
+<p>见demo03</p>
+</blockquote>
+<p>===================================================================================================================</p>
+<blockquote>
+<p>1).定义一个水果类：</p>
+<p>成员属性：产地、价格、采摘日期</p>
+<p>成员方法：采摘(打印采摘日期)</p>
+<p>2).定义一个“苹果类”，继承自：水果类</p>
+<p>成员方法：重写“采摘”，打印：我是苹果，我是xxx年xx月xx日采摘的！</p>
+<p>3).定义一个“桔子类”，继承自：水果类</p>
+<p>成员方法：重写“采摘”，打印：我是桔子，我的xxx年xx月xx日采摘的！</p>
+<p>见demo04</p>
+</blockquote>
+<h1 id="第三章抽象类重点">第三章：抽象类【重点】</h1>
+<h3 id="31-抽象类的概念">3.1 抽象类的概念</h3>
+<p>视频</p>
+<img width="838" height="431" src="/_resources/f95358a0fce7409295a82524b3352c47.jpg" class="jop-noMdConv" />
+<h3 id="32-抽象类和抽象方法的定义">3.2 抽象类和抽象方法的定义</h3>
+<p>1).抽象类：</p>
+<p><strong>public abstract class</strong> Human { *<a title="//1.xn--jsrq0qc7c28b" href="//1.xn--jsrq0qc7c28b">//1.成员属性</a><strong><a title="//2.xn--nfvu3by6hsy6b" href="//2.xn--nfvu3by6hsy6b">//2.构造方法</a></strong><a title="//3.xn--jsr123amycvuao2wz98c" href="//3.xn--jsr123amycvuao2wz98c">//3.普通成员方法</a>**<a title="//4.xn--tsu79d91i6m9a" href="//4.xn--tsu79d91i6m9a">//4.抽象方法</a>(没有方法体的方法)* }</p>
+<p><strong>作用：不能被创建对象，只能做父类，代码复用！！</strong></p>
+<p>2).抽象方法的定义：</p>
+<p><strong>public abstract</strong> <strong>返回值类型</strong>/void work([形参]);//可以有参、有返回值，就是不能有“方法体”</p>
+<p>作用：被子类继承，并且要求子类必须重写的——对子类形成限制！</p>
+<h3 id="33-抽象类的特点">3.3 抽象类的特点</h3>
+<p>1).抽象类：不能被创建对象，就是用来做“父类”被子类继承的！</p>
+<p>2).子类继承了抽象类后，必须重写抽象类中所有的“抽象方法”，否则子类也必须是“抽象类”！</p>
+<p>3).抽象类中可以不定义抽象方法；</p>
+<p>但如果有“抽象方法”，这个类必须被定义为“抽象类”！！</p>
+<p>4).抽象类不能被创建对象，但可以有“构造方法”，用于给子类初始化成员属性的：</p>
+<img width="424" height="363" src="/_resources/3f6ab567156945e19333abb155822641.jpg" class="jop-noMdConv" />
+<p>5).子类继承抽象类，仍然用extends关键字，而且必须是“单继承”！</p>
+<h1 id="第四章final关键字">第四章：final关键字</h1>
+<h3 id="41-final关键字概述">4.1 final关键字概述</h3>
+<p>1).final表示：“最终”的</p>
+<p>2).它可以修饰：</p>
+<blockquote>
+<p>1).类</p>
+<p>2).成员属性</p>
+<p>3).成员方法</p>
+<p>4).局部变量</p>
+</blockquote>
+<p>3).注意：一共5个位置中的4个</p>
+<img width="369" height="228" src="/_resources/4147d95f08cd4a9e8fb4e684fa56e15a.jpg" class="jop-noMdConv" />
+<h3 id="42final的应用位置">4.2final的应用位置：</h3>
+<p><strong>1).修饰类：表示”此类不能被继承”——太监类</strong></p>
+<blockquote>
+<p>public final class String{</p>
+<p>…</p>
+<p>}</p>
+<p>此类不能被其它类继承；</p>
+</blockquote>
+<p>2).<strong>修饰“成员方法”：表示“此方法只能被子类继承，但不能被重写”！</strong></p>
+<blockquote>
+<p>public class Fu{</p>
+<p>public void eat(){//需要子类继承，也可以重写</p>
+<p>System.out.println(“牛肉炖萝卜”);</p>
+<p>}</p>
+<p>public <strong>final</strong>void study(){//需要子类继承，但这个方法就不想被子类重写</p>
+<p>System.out.println(“必须要考大学，学Java”);</p>
+<p>}</p>
+<p>}</p>
+<p>public class Zi extends Fu{</p>
+<p>//可以重写eat()</p>
+<p>public void eat(){</p>
+<p>System.out.println(“我吃KFC…”);</p>
+<p>}</p>
+<p><strong>//<strong><strong>重写s</strong></strong>tudy()</strong></p>
+<p>public void study(){//<strong>编译错误</strong></p>
+<p>**    System.out.println(“<strong><strong>我不考大学，我要学P</strong></strong>HP”);**</p>
+<p>**    }**</p>
+<p>}</p>
+</blockquote>
+<p><strong>3</strong>).<strong>修饰：成员变量、局部变量：表示“常量”，其值只能被初始化一次，之后就不能被修改了！</strong></p>
+<blockquote>
+<p>1).基本数据类型：表示“值”不能改变！</p>
+<p>final int a = 10;</p>
+<p>a = 20;//<strong>编译错误</strong></p>
+<p>2).引用数据类型：表示“地址(引用)”不能改变！</p>
+<p>final int[] arr = {1,2,3};</p>
+<p>arr[0] = 100;//OK的</p>
+<p>arr = new int[10];//<strong>编译错误！！不能更改引用！！</strong></p>
+</blockquote>
+<hr />
+<h3 id="43-经验值分享">4.3 经验值分享：</h3>
+<p>总结：</p>
+<p><strong>1</strong>.<strong>能够写出类的继承格式</strong></p>
+<blockquote>
+<p><strong>public class Fu{}</strong></p>
+<p><strong>public class Zi</strong> <strong>extends</strong> <strong>Fu{</strong></p>
+<p><strong>}</strong></p>
+</blockquote>
+<p><strong>2</strong>.<strong>能够说出继承的特点</strong></p>
+<blockquote>
+<p><strong>1). 父类的私有成员可以被继承，但不能被访问</strong></p>
+<p><strong>2).Java只能单继承</strong></p>
+<p><strong>3).Java可以多级继承；</strong></p>
+</blockquote>
+<p><strong>3</strong>.<strong>能够说出子类调用父类的成员特点</strong></p>
+<blockquote>
+<p><strong>先在子类中找，找到就用子类的；找不到就去父类中找！</strong></p>
+</blockquote>
+<p><strong>4</strong>.<strong>能够说出方法重写的概念</strong></p>
+<blockquote>
+<p><strong>子类定义跟父类“一模一样”(返回值类型、方法名、形参列表)的方法，这种形式叫：重写</strong></p>
+</blockquote>
+<p><strong>5</strong>.<strong>能够说出this可以解决的问题</strong></p>
+<blockquote>
+<p><strong>this：当局部变量覆盖成员变量时，要访问成员变量，必须用this.成员属性</strong></p>
+<p><strong>在一个构造方法中，调用另一个构造方法，这时必须用this()</strong></p>
+</blockquote>
+<p><strong>6</strong>.<strong>能够说出super可以解决的问题</strong></p>
+<blockquote>
+<p><strong>super：当子类的成员变量，覆盖父类的成员变量时，要访问被覆盖的父类的成员变量时，必须使用：super.父类成员变量名</strong></p>
+<p><strong>当子类的成员方法，覆盖父类的成员方法时，要访问被覆盖的父类的成员方法时，必须使用：super.父类成员方法名(****)</strong></p>
+<p><strong>当在子类的构造方法中调用父类的构造方法时，必须使用super（实参)</strong></p>
+</blockquote>
+<p><strong>7</strong>.<strong>能够描述抽象方法的概念</strong></p>
+<blockquote>
+<p><strong>抽象方法：没有方法体的方法，要求子类必须继承，并强制子类重写的方法。</strong></p>
+</blockquote>
+<p><strong>8</strong>.<strong>能够写出抽象类的格式</strong></p>
+<blockquote>
+<p><strong>public abstract class</strong> <strong>类名{</strong></p>
+<p><strong>}</strong></p>
+</blockquote>
+<p><strong>9</strong>.<strong>能够写出抽象方法的格式</strong></p>
+<blockquote>
+<p><strong>public abstract class</strong> <strong>类名{</strong></p>
+<p>//<strong>抽象方法</strong></p>
+<p><strong>public abstract</strong> <strong>返回值类型</strong> <strong>方法名(<strong><strong>[<strong><strong>参数]</strong></strong>)</strong></strong>;</strong></p>
+<p><strong>}</strong></p>
+</blockquote>
+<p>10.<strong>能够说出父类抽象方法的存在意义</strong></p>
+<blockquote>
+<p><strong>强制子类继承，并重写！</strong></p>
+</blockquote>
+<p>11.<strong>能够描述final修饰的类的特点</strong></p>
+<blockquote>
+<p><strong>不能被继承</strong></p>
+</blockquote>
+<p>12.<strong>能够描述final修饰的方法的特点</strong></p>
+<blockquote>
+<p><strong>不能被重写(但可以被继承)</strong></p>
+</blockquote>
+<p>13.<strong>能够描述final修饰的变量的特点</strong></p>
+<blockquote>
+<p><strong>只能初始化一次，之后就不能被修改了——常量</strong></p>
+<p><strong>基本数据类型：值不能更改；</strong></p>
+<p><strong>引用数据类型：地址不能被更改；</strong></p>
+</blockquote>
+</div>
+      </article>
+    </div>
+  </body>
+</html>
