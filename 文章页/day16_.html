@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>day16_单例、多例、枚举、工厂模式、正则表达式 - zblog</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zblog</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">day16_单例、多例、枚举、工厂模式、正则表达式</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1618795309656"
+                  >2021-04-19 09:21</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1632293144200"
+                  >2021-09-22 14:45</time
+                ></span
+              >
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><nav class="table-of-contents"><ul><li><a href="#day16-单例模式-多例模式-枚举-工厂模式-正则表达式">day16 单例模式、多例模式、枚举、工厂模式、正则表达式</a><ul><li><a href="#昨日重点内容回顾">昨日重点内容回顾</a></li><li><a href="#今日学习目标">今日学习目标</a></li></ul></li><li><a href="#第一章-单例设计模式">第一章 单例设计模式</a><ul><li><a href="#11-单例设计模式的作用">1.1 单例设计模式的作用</a></li><li><a href="#12-单例设计模式实现步骤">1.2 单例设计模式实现步骤</a></li><li><a href="#13-单例设计模式的类型">1.3 单例设计模式的类型</a></li><li><a href="#14-饿汉单例设计模式">1.4 饿汉单例设计模式</a></li><li><a href="#15-懒汉单例设计模式">1.5 懒汉单例设计模式</a></li><li><a href="#16-小结">1.6 小结</a></li></ul></li><li><a href="#第二章-多例设计模式">第二章 多例设计模式</a><ul><li><a href="#21多例设计模式的作用">2.1.多例设计模式的作用</a></li><li><a href="#22实现步骤">2.2.实现步骤</a></li><li><a href="#23实现代码如下">2.3.实现代码如下:</a></li><li><a href="#24测试结果">2.4.测试结果:</a></li><li><a href="#25多例模式小结">2.5.多例模式小结:</a></li></ul></li><li><a href="#第三章-枚举">第三章 枚举</a><ul><li><a href="#31-不使用枚举存在的问题">3.1 不使用枚举存在的问题</a></li><li><a href="#32-枚举的作用与应用场景">3.2 枚举的作用与应用场景</a></li><li><a href="#33-枚举的基本语法">3.3 枚举的基本语法</a><ul><li><a href="#331-枚举的概念">3.3.1 枚举的概念</a></li><li><a href="#332-定义枚举的格式">3.3.2 定义枚举的格式</a></li><li><a href="#333-入门案例">3.3.3 入门案例</a></li><li><a href="#334-枚举的其他内容">3.3.4 枚举的其他内容</a></li></ul></li><li><a href="#34-应用场景">3.4 应用场景</a></li><li><a href="#35-枚举的应用">3.5 枚举的应用</a></li><li><a href="#36-小结">3.6 小结</a></li></ul></li><li><a href="#第四章-工厂设计模式">第四章 工厂设计模式</a><ul><li><a href="#41工厂模式概述">4.1.工厂模式概述:</a></li><li><a href="#42工厂模式作用">4.2.工厂模式作用:</a></li><li><a href="#43工厂模式实现步骤">4.3.工厂模式实现步骤:</a></li><li><a href="#44工厂模式实现代码">4.4.工厂模式实现代码:</a></li><li><a href="#45工厂模式小结">4.5.工厂模式小结</a></li></ul></li><li><a href="#第五章-正则表达式">第五章 正则表达式</a><ul><li><a href="#51-正则表达式的概念及演示">5.1 正则表达式的概念及演示</a></li><li><a href="#52-正则表达式-字符类">5.2 正则表达式-字符类</a></li><li><a href="#53-正则表达式-逻辑运算符">5.3 正则表达式-逻辑运算符</a></li><li><a href="#54-正则表达式-预定义字符">5.4 正则表达式-预定义字符</a></li><li><a href="#55-正则表达式-数量词">5.5 正则表达式-数量词</a></li><li><a href="#56-正则表达式-分组括号">5.6 正则表达式-分组括号( )</a></li><li><a href="#57-string的split方法中使用正则表达式">5.7 String的split方法中使用正则表达式</a></li><li><a href="#58-string类的replaceall方法中使用正则表达式">5.8 String类的replaceAll方法中使用正则表达式</a></li></ul></li></ul></nav><h1 id="day16-单例模式-多例模式-枚举-工厂模式-正则表达式">day16 单例模式、多例模式、枚举、工厂模式、正则表达式</h1>
+<h2 id="昨日重点内容回顾">昨日重点内容回顾</h2>
+<div><pre class="hljs"><code><span class="hljs-bullet">*</span> 能够说出XML的作用
+<span class="hljs-code">    存储数据，充当配置文件！
+</span>
+<span class="hljs-bullet">*</span> 了解XML的组成元素
+<span class="hljs-code">    文档声明、注释、元素、属性、转义字符
+    &lt;!-- 注释的内容 --&gt;
+    
+* 能够说出有哪些XML约束技术
+    dtd约束、schema约束
+    
+* 能够说出解析XML文档DOM方式原理
+    先将xml文件加载到内存，生成一棵DOM树(Document对象，它里面包含了整个xml文件里面所有的节点)，使用Document对象获得根元素节点(唯一的一个)，通过根元素节点获得它所有的子元素节点，依次获取它的属性值和文本值。
+    
+* 能够使用dom4j解析XML文档
+        // 获得核心解析器对象
+        SAXReader saxReader = new SAXReader();
+</span>
+<span class="hljs-code">        // 使用核心解析器对象读取xml文件得到Document对象
+        Document document = saxReader.read("day15_xml/src/books.xml");
+        //System.out.println(document); // org.dom4j.tree.DefaultDocument@682a0b20 [Document: name day15_xml/src/books.xml]
+</span>
+<span class="hljs-code">        // 使用document对象获得根元素节点
+        Element root = document.getRootElement();
+        //System.out.println(root.getName()); // books
+</span>
+<span class="hljs-code">        // 获得根元素节点的所有子元素节点
+        List&lt;Element&gt; bookEles = root.elements("book");
+        
+    	// 遍历
+        for (Element bookEle : bookEles) {
+            // 获得元素的名称
+            //System.out.println(bookEle.getName()); // book book
+</span>
+<span class="hljs-code">            // 获得指定属性id的值
+            //System.out.println(bookEle.attributeValue("id")); // 001 002
+</span>
+<span class="hljs-code">            // 获得指定元素的文本值
+            //System.out.println(bookEle.elementText("name"));
+</span>
+<span class="hljs-code">            // 继续遍历获得book元素节点的子元素节点
+            List&lt;Element&gt; eles = bookEle.elements();
+            for (Element ele : eles) {
+                // 获得当前元素节点的文本值
+                System.out.println(ele.getName()+"："+ele.getText());
+            }
+        }    
+        
+* 能够使用xpath解析XML或HTML文档
+        // 创建SaxReader核心解析器对象
+        SAXReader saxReader = new SAXReader();
+</span>
+<span class="hljs-code">        // 通过核心解析器对象加载xml文件获得Document对象
+        Document document = saxReader.read("src/books.xml");
+</span>
+<span class="hljs-code">        /*
+            创建的是模块：
+            单元测试路径相对的是模块
+            main方法路径相对的是项目！
+        */
+</span>
+<span class="hljs-code">        // 获得id为0002的书book
+        Element book = (Element) document.selectSingleNode("//book[@id='0002']");
+</span>
+<span class="hljs-code">        // 获得指定元素名称的文本值
+        System.out.println(book.elementText("name"));</span></code></pre></div>
+<h2 id="今日学习目标">今日学习目标</h2>
+<ul>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-55" /><label id="cb-label-md-checkbox-55" for="md-checkbox-55" class="checkbox-label-unchecked">能够说出单例设计模式的好处</label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-56" /><label id="cb-label-md-checkbox-56" for="md-checkbox-56" class="checkbox-label-unchecked">能够说出多例模式的好处</label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-57" /><label id="cb-label-md-checkbox-57" for="md-checkbox-57" class="checkbox-label-unchecked">能够定义枚举</label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-58" /><label id="cb-label-md-checkbox-58" for="md-checkbox-58" class="checkbox-label-unchecked">能够使用工厂模式编写java程序</label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-59" /><label id="cb-label-md-checkbox-59" for="md-checkbox-59" class="checkbox-label-unchecked">能够理解正则表达式的作用</label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-60" /><label id="cb-label-md-checkbox-60" for="md-checkbox-60" class="checkbox-label-unchecked">能够使用正则表达式的字符类</label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-61" /><label id="cb-label-md-checkbox-61" for="md-checkbox-61" class="checkbox-label-unchecked">能够使用正则表达式的逻辑运算符</label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-62" /><label id="cb-label-md-checkbox-62" for="md-checkbox-62" class="checkbox-label-unchecked">能够使用正则表达式的预定义字符类</label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-63" /><label id="cb-label-md-checkbox-63" for="md-checkbox-63" class="checkbox-label-unchecked">能够使用正则表达式的限定符</label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-64" /><label id="cb-label-md-checkbox-64" for="md-checkbox-64" class="checkbox-label-unchecked">能够使用正则表达式的分组</label></div><p></p>
+</li>
+<li class="md-checkbox joplin-checkbox">
+<p></p><div class="checkbox-wrapper"><input type="checkbox" id="md-checkbox-65" /><label id="cb-label-md-checkbox-65" for="md-checkbox-65" class="checkbox-label-unchecked">能够在String的split方法中使用正则表达式</label></div><p></p>
+</li>
+</ul>
+<h1 id="第一章-单例设计模式">第一章 单例设计模式</h1>
+<p>正常情况下一个类可以创建多个对象</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+    <span class="hljs-comment">// 正常情况下一个类可以创建多个对象</span>
+    <span class="hljs-type">Person</span> <span class="hljs-variable">p1</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Person</span>();
+    <span class="hljs-type">Person</span> <span class="hljs-variable">p2</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Person</span>();
+    <span class="hljs-type">Person</span> <span class="hljs-variable">p3</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Person</span>();
+}</code></pre></div>
+<h2 id="11-单例设计模式的作用">1.1 单例设计模式的作用</h2>
+<p>单例模式，是一种常用的软件设计模式。通过单例模式可以保证系统中，应用该模式的这个类只有一个实例。即一个类只有一个对象实例。</p>
+<h2 id="12-单例设计模式实现步骤">1.2 单例设计模式实现步骤</h2>
+<ol>
+<li>
+<p>将构造方法私有化，使其不能在类的外部通过new关键字实例化该类对象。</p>
+</li>
+<li>
+<p>在该类内部产生一个唯一的实例化对象，并且将其封装为private static类型的成员变量。</p>
+</li>
+<li>
+<p>定义一个静态方法返回这个唯一对象。</p>
+</li>
+</ol>
+<h2 id="13-单例设计模式的类型">1.3 单例设计模式的类型</h2>
+<p>根据实例化对象的时机单例设计模式又分为以下两种:</p>
+<ol>
+<li>
+<p>饿汉单例设计模式</p>
+</li>
+<li>
+<p>懒汉单例设计模式</p>
+</li>
+</ol>
+<h2 id="14-饿汉单例设计模式">1.4 饿汉单例设计模式</h2>
+<p>饿汉单例设计模式就是使用类的时候已经将对象创建完毕，不管以后会不会使用到该实例化对象，先创建了再说。很着急的样子，故被称为“饿汉模式”。</p>
+<p>代码如下：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Singleton</span> {
+    <span class="hljs-comment">// 1.将构造方法私有化，使其不能在类的外部通过new关键字实例化该类对象。</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-title function_">Singleton</span><span class="hljs-params">()</span> {}
+
+    <span class="hljs-comment">// 2.在该类内部产生一个唯一的实例化对象，并且将其封装为private static类型的成员变量。</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">Singleton</span> <span class="hljs-variable">instance</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Singleton</span>();
+    
+    <span class="hljs-comment">// 3.定义一个静态方法返回这个唯一对象。</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Singleton <span class="hljs-title function_">getInstance</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> instance;
+    }
+}</code></pre></div>
+<h2 id="15-懒汉单例设计模式">1.5 懒汉单例设计模式</h2>
+<p>懒汉单例设计模式就是调用getInstance()方法时实例才被创建，先不急着实例化出对象，等要用的时候才实例化出对象。不着急，故称为“懒汉模式”。</p>
+<p>代码如下：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Singleton</span> {
+
+    <span class="hljs-comment">// 2.在该类内部产生一个唯一的实例化对象，并且将其封装为private static类型的成员变量。</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> Singleton instance;
+    
+    <span class="hljs-comment">// 1.将构造方法私有化，使其不能在类的外部通过new关键字实例化该类对象。</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-title function_">Singleton</span><span class="hljs-params">()</span> {}
+    
+    <span class="hljs-comment">// 3.定义一个静态方法返回这个唯一对象。要用的时候才例化出对象</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">synchronized</span> Singleton <span class="hljs-title function_">getInstance</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">if</span>(instance == <span class="hljs-literal">null</span>) {
+            instance = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Singleton</span>();
+        }
+        <span class="hljs-keyword">return</span> instance;
+    }
+}</code></pre></div>
+<blockquote>
+<p>注意：懒汉单例设计模式在多线程环境下可能会实例化出多个对象，不能保证单例的状态，所以加上关键字：synchronized，保证其同步安全。</p>
+</blockquote>
+<h2 id="16-小结">1.6 小结</h2>
+<p>单例模式可以保证系统中一个类只有一个对象实例。</p>
+<p>实现单例模式的步骤：</p>
+<ol>
+<li>将构造方法私有化，使其不能在类的外部通过new关键字实例化该类对象。</li>
+<li>在该类内部产生一个唯一的实例化对象，并且将其封装为private static类型的成员变量。</li>
+<li>定义一个静态方法返回这个唯一对象。</li>
+</ol>
+<h1 id="第二章-多例设计模式">第二章 多例设计模式</h1>
+<p>一般情况下一个类可以创建多个对象</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+    <span class="hljs-comment">// 正常情况下一个类可以创建多个对象</span>
+    <span class="hljs-type">Person</span> <span class="hljs-variable">p1</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">User</span>();
+    <span class="hljs-type">Person</span> <span class="hljs-variable">p2</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">User</span>();
+    <span class="hljs-type">Person</span> <span class="hljs-variable">p3</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">User</span>();
+}</code></pre></div>
+<h2 id="21多例设计模式的作用">2.1.多例设计模式的作用</h2>
+<p>多例模式，是一种常用的软件设计模式。通过多例模式可以保证系统中，应用该模式的类有固定数量的实例。多例类要自我创建并管理自己的实例，还要向外界提供获取本类实例的方法。</p>
+<h2 id="22实现步骤">2.2.实现步骤</h2>
+<p>​	1.创建一个类,  将构造方法私有化，使其不能在类的外部通过new关键字实例化该类对象。</p>
+<p>​	2.在类中定义该类被创建的总数量</p>
+<p>​	3.在类中定义存放类实例的list集合</p>
+<p>​	4.在类中提供静态代码块,在静态代码块中创建类的实例</p>
+<p>​	5.提供获取类实例的静态方法</p>
+<h2 id="23实现代码如下">2.3.实现代码如下:</h2>
+<div><pre class="hljs"><code><span class="hljs-keyword">import</span> java.util.ArrayList;
+<span class="hljs-keyword">import</span> java.util.List;
+<span class="hljs-keyword">import</span> java.util.Random;
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Multition</span> {
+    <span class="hljs-comment">// 定义该类被创建的总数量</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">int</span> <span class="hljs-variable">maxCount</span> <span class="hljs-operator">=</span> <span class="hljs-number">3</span>;
+    <span class="hljs-comment">// 定义存放类实例的list集合</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-type">List</span> <span class="hljs-variable">instanceList</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>();
+    <span class="hljs-comment">// 构造方法私有化,不允许外界创建本类对象</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-title function_">Multition</span><span class="hljs-params">()</span> {
+    }
+    <span class="hljs-keyword">static</span> {
+        <span class="hljs-comment">// 创建本类的多个实例,并存放到list集合中</span>
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; maxCount; i++) {
+            <span class="hljs-type">Multition</span> <span class="hljs-variable">multition</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Multition</span>();
+            instanceList.add(multition);
+        }
+    }
+    <span class="hljs-comment">// 给外界提供一个获取类对象的方法</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> Multition <span class="hljs-title function_">getMultition</span><span class="hljs-params">()</span>{
+        <span class="hljs-type">Random</span> <span class="hljs-variable">random</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Random</span>();
+        <span class="hljs-comment">// 生成一个随机数</span>
+        <span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> random.nextInt(maxCount);
+        <span class="hljs-comment">// 从list集合中随机取出一个进行使用</span>
+        <span class="hljs-keyword">return</span> (Multition)instanceList.get(i);
+    }
+}</code></pre></div>
+<h2 id="24测试结果">2.4.测试结果:</h2>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+    <span class="hljs-comment">// 编写一个循环从中获取类对象</span>
+    <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">10</span>; i++) {
+        <span class="hljs-type">Multition</span> <span class="hljs-variable">multition</span> <span class="hljs-operator">=</span> Multition.getMultition();
+        System.out.println(multition);
+    }
+}</code></pre></div>
+<h2 id="25多例模式小结">2.5.多例模式小结:</h2>
+<p>多例模式可以保证系统中一个类有固定个数的实例, 在实现需求的基础上, 能够提高实例的复用性.</p>
+<p>实现多例模式的步骤：</p>
+<ol>
+<li>创建一个类,  将构造方法私有化，使其不能在类的外部通过new关键字实例化该类对象。</li>
+<li>在类中定义该类被创建的总数量</li>
+<li>在类中定义存放类实例的list集合</li>
+<li>在类中提供静态代码块,在静态代码块中创建类的实例</li>
+<li>提供获取类实例的静态方法</li>
+</ol>
+<h1 id="第三章-枚举">第三章 枚举</h1>
+<h2 id="31-不使用枚举存在的问题">3.1 不使用枚举存在的问题</h2>
+<p>假设我们要定义一个人类，人类中包含姓名和性别。通常会将性别定义成字符串类型，效果如下：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> {
+    <span class="hljs-keyword">private</span> String name;
+    <span class="hljs-keyword">private</span> String sex;
+
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Person</span><span class="hljs-params">()</span> {
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Person</span><span class="hljs-params">(String name, String sex)</span> {
+        <span class="hljs-built_in">this</span>.name = name;
+        <span class="hljs-built_in">this</span>.sex = sex;
+    }
+    
+    <span class="hljs-comment">// 省略get/set/toString方法</span>
+}</code></pre></div>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo01</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">Person</span> <span class="hljs-variable">p1</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Person</span>(<span class="hljs-string">"张三"</span>, <span class="hljs-string">"男"</span>);
+        <span class="hljs-type">Person</span> <span class="hljs-variable">p2</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Person</span>(<span class="hljs-string">"张三"</span>, <span class="hljs-string">"abc"</span>); <span class="hljs-comment">// 因为性别是字符串,所以我们可以传入任意字符串</span>
+    }
+}</code></pre></div>
+<p>不使用枚举存在的问题：可以给性别传入任意的字符串，导致性别是非法的数据，不安全。</p>
+<h2 id="32-枚举的作用与应用场景">3.2 枚举的作用与应用场景</h2>
+<p>枚举的作用：一个方法接收的参数是固定范围之内的时候，那么即可使用枚举。</p>
+<h2 id="33-枚举的基本语法">3.3 枚举的基本语法</h2>
+<h3 id="331-枚举的概念">3.3.1 枚举的概念</h3>
+<p>枚举是一种特殊类。枚举是有固定实例个数的类型，我们可以把枚举理解成有固定个数实例的多例模式。</p>
+<h3 id="332-定义枚举的格式">3.3.2 定义枚举的格式</h3>
+<div><pre class="hljs"><code><span class="hljs-keyword">enum</span> 枚举名 {
+    第一行都是罗列枚举实例,这些枚举实例直接写大写名字即可。
+}</code></pre></div>
+<h3 id="333-入门案例">3.3.3 入门案例</h3>
+<ol>
+<li>定义枚举：BOY表示男，GIRL表示女</li>
+</ol>
+<div><pre class="hljs"><code><span class="hljs-keyword">enum</span> <span class="hljs-title class_">Sex</span> {
+    BOY, GIRL; <span class="hljs-comment">// 男，女</span>
+}</code></pre></div>
+<ol start="2">
+<li>Perosn中的性别由String类型改为Sex枚举类型</li>
+</ol>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> {
+    <span class="hljs-keyword">private</span> String name;
+    <span class="hljs-keyword">private</span> Sex sex;
+
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Person</span><span class="hljs-params">()</span> {
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Person</span><span class="hljs-params">(String name, Sex sex)</span> {
+        <span class="hljs-built_in">this</span>.name = name;
+        <span class="hljs-built_in">this</span>.sex = sex;
+    }
+    <span class="hljs-comment">// 省略get/set/toString方法</span>
+}</code></pre></div>
+<ol start="3">
+<li>使用是只能传入枚举中的固定值</li>
+</ol>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo02</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">Person</span> <span class="hljs-variable">p1</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Person</span>(<span class="hljs-string">"张三"</span>, Sex.BOY);
+        <span class="hljs-type">Person</span> <span class="hljs-variable">p2</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Person</span>(<span class="hljs-string">"张三"</span>, Sex.GIRL);
+        <span class="hljs-type">Person</span> <span class="hljs-variable">p3</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Person</span>(<span class="hljs-string">"张三"</span>, <span class="hljs-string">"abc"</span>);
+    }
+}</code></pre></div>
+<h3 id="334-枚举的其他内容">3.3.4 枚举的其他内容</h3>
+<p>枚举的本质是一个类，我们刚才定义的Sex枚举最终效果如下：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">enum</span> <span class="hljs-title class_">Sex</span> {
+    BOY, GIRL; <span class="hljs-comment">// 男，女</span>
+}
+
+<span class="hljs-comment">// 枚举的本质是一个类，我们刚才定义的Sex枚举相当于下面的类</span>
+<span class="hljs-keyword">final</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SEX</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">java</span>.lang.Enum&lt;SEX&gt; {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">SEX</span> <span class="hljs-variable">BOY</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SEX</span>();
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> <span class="hljs-type">SEX</span> <span class="hljs-variable">GIRL</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SEX</span>();
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> SEX[] values();
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> SEX <span class="hljs-title function_">valueOf</span><span class="hljs-params">(java.lang.String)</span>;
+    <span class="hljs-keyword">static</span> {};
+}</code></pre></div>
+<p>枚举的本质是一个类，所以枚举中还可以有成员变量，成员方法等。</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">enum</span> <span class="hljs-title class_">Sex</span> {
+    BOY(<span class="hljs-number">18</span>), GIRL(<span class="hljs-number">16</span>);
+
+    <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> age;
+
+    Sex(<span class="hljs-type">int</span> age) {
+        <span class="hljs-built_in">this</span>.age = age;
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">showAge</span><span class="hljs-params">()</span> {
+        System.out.println(<span class="hljs-string">"年龄是: "</span> + age);
+    }
+}</code></pre></div>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo03</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">Person</span> <span class="hljs-variable">p1</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Person</span>(<span class="hljs-string">"张三"</span>, Sex.BOY);
+        <span class="hljs-type">Person</span> <span class="hljs-variable">p2</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Person</span>(<span class="hljs-string">"张三"</span>, Sex.GIRL);
+
+        Sex.BOY.showAge();
+        Sex.GIRL.showAge();
+    }
+}</code></pre></div>
+<p>运行效果：</p>
+<div><pre class="hljs"><code>年龄是: <span class="hljs-number">18</span>
+年龄是: <span class="hljs-number">16</span></code></pre></div>
+<h2 id="34-应用场景">3.4 应用场景</h2>
+<h2 id="35-枚举的应用">3.5 枚举的应用</h2>
+<p><strong>枚举的作用：枚举通常可以用于做信息的分类，如性别，方向，季度等。</strong></p>
+<p>枚举表示性别：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">enum</span> <span class="hljs-title class_">Sex</span> {
+    MAIL, FEMAIL;
+}</code></pre></div>
+<p>枚举表示方向：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">enum</span> <span class="hljs-title class_">Orientation</span> {
+    UP, RIGHT, DOWN, LEFT;
+}</code></pre></div>
+<p>枚举表示季度</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">enum</span> <span class="hljs-title class_">Season</span> {
+    SPRING, SUMMER, AUTUMN, WINTER;
+}</code></pre></div>
+<h2 id="36-小结">3.6 小结</h2>
+<ul>
+<li>枚举类在第一行罗列若干个枚举对象。（多例）</li>
+<li>第一行都是常量，存储的是枚举类的对象。</li>
+<li>枚举是不能在外部创建对象的，枚举的构造器默认是私有的。</li>
+<li>枚举通常用于做信息的标志和分类。</li>
+</ul>
+<h1 id="第四章-工厂设计模式">第四章 工厂设计模式</h1>
+<h2 id="41工厂模式概述">4.1.工厂模式概述:</h2>
+<p>工厂模式（Factory Pattern）是 Java 中最常用的设计模式之一。这种类型的设计模式属于创建型模式，它提供了一种创建对象的最佳方式。之前我们创建类对象时, 都是使用new 对象的形式创建, 除new 对象方式以外, 工厂模式也可以创建对象.</p>
+<h2 id="42工厂模式作用">4.2.工厂模式作用:</h2>
+<p>解决类与类之间的耦合问题</p>
+<h2 id="43工厂模式实现步骤">4.3.工厂模式实现步骤:</h2>
+<ol>
+<li>编写一个Car接口, 提供run方法</li>
+<li>编写一个Falali类实现Car接口,重写run方法</li>
+<li>编写一个Benchi类实现Car接口,重写run方法</li>
+<li>提供一个CarFactory(汽车工厂),用于生产汽车对象</li>
+<li>定义CarFactoryTest测试汽车工厂</li>
+</ol>
+<h2 id="44工厂模式实现代码">4.4.工厂模式实现代码:</h2>
+<p>1.编写一个Car接口, 提供run方法</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">Car</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span>;
+}</code></pre></div>
+<p>2.编写一个Falali类实现Car接口,重写run方法</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Falali</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Car</span> {
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> {
+        System.out.println(<span class="hljs-string">"法拉利以每小时500公里的速度在奔跑....."</span>);
+    }
+}</code></pre></div>
+<p>3.编写一个Benchi类实现Car接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Benchi</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Car</span> {
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> {
+        System.out.println(<span class="hljs-string">"奔驰汽车以每秒1米的速度在挪动....."</span>);
+    }
+}</code></pre></div>
+<p>4.提供一个CarFactory(汽车工厂),用于生产汽车对象</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CarFactory</span> {
+    <span class="hljs-comment">/**
+     * <span class="hljs-doctag">@param</span> id : 车的标识
+     *           benchi : 代表需要创建Benchi类对象
+     *           falali : 代表需要创建Falali类对象
+     *           如果传入的车标识不正确,代表当前工厂生成不了当前车对象,则返回null
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">public</span> Car <span class="hljs-title function_">createCar</span><span class="hljs-params">(String id)</span>{
+        <span class="hljs-keyword">if</span>(<span class="hljs-string">"falali"</span>.equals(id)){
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Falali</span>();
+        }<span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(<span class="hljs-string">"benchi"</span>.equals(id)){
+            <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Benchi</span>();
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+    }
+}</code></pre></div>
+<p>5.定义CarFactoryTest测试汽车工厂</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CarFactoryTest</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">CarFactory</span> <span class="hljs-variable">carFactory</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">CarFactory</span>();
+        <span class="hljs-type">Car</span> <span class="hljs-variable">benchi</span> <span class="hljs-operator">=</span> carFactory.createCar(<span class="hljs-string">"benchi"</span>);
+        benchi.run();
+        <span class="hljs-type">Car</span> <span class="hljs-variable">falali</span> <span class="hljs-operator">=</span> carFactory.createCar(<span class="hljs-string">"falali"</span>);
+        falali.run();
+    }
+}</code></pre></div>
+<h2 id="45工厂模式小结">4.5.工厂模式小结</h2>
+<p>工厂模式的存在可以改变创建类的方式,解决类与类之间的耦合.</p>
+<p>实现步骤:</p>
+<ol>
+<li>编写一个Car接口, 提供run方法</li>
+<li>编写一个Falali类实现Car接口,重写run方法</li>
+<li>编写一个Benchi类实现Car接口,重写run方法</li>
+<li>提供一个CarFactory(汽车工厂),用于生产汽车对象</li>
+<li>定义CarFactoryTest测试汽车工厂</li>
+</ol>
+<h1 id="第五章-正则表达式">第五章 正则表达式</h1>
+<h2 id="51-正则表达式的概念及演示">5.1 正则表达式的概念及演示</h2>
+<ul>
+<li>在Java中，我们经常需要验证一些字符串，例如：年龄必须是2位的数字、用户名必须是8位长度而且只能包含大小写字母、数字等。正则表达式就是用来验证各种字符串的规则。它内部描述了一些规则，我们可以验证用户输入的字符串是否匹配这个规则。</li>
+<li>先看一个不使用正则表达式验证的例子：下面的程序让用户输入一个QQ号码，我们要验证：
+<ul>
+<li>QQ号码必须是5–15位长度</li>
+<li>而且必须全部是数字</li>
+<li>而且首位不能为0</li>
+</ul>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">Scanner</span> <span class="hljs-variable">sc</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Scanner</span>(System.in);
+        
+        System.out.println(<span class="hljs-string">"请输入你的QQ号码："</span>);
+        <span class="hljs-type">String</span> <span class="hljs-variable">qq</span> <span class="hljs-operator">=</span> sc.next();
+        
+        System.out.println(checkQQ(qq));
+    }
+    <span class="hljs-comment">//我们自己编写代码，验证QQ号码</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">checkQQ</span><span class="hljs-params">(String qq)</span> {
+        <span class="hljs-comment">//1.验证5--15位</span>
+        <span class="hljs-keyword">if</span>(qq.length() &lt; <span class="hljs-number">5</span> || qq.length() &gt; <span class="hljs-number">15</span>){
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        }
+        <span class="hljs-comment">//2.必须都是数字；</span>
+        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;i &lt; qq.length() ; i++){
+            <span class="hljs-type">char</span> <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> qq.charAt(i);
+            <span class="hljs-keyword">if</span>(c &lt; <span class="hljs-string">'0'</span> || c &gt; <span class="hljs-string">'9'</span>){
+                <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+            }
+        }
+        <span class="hljs-comment">//3.首位不能是0；</span>
+        <span class="hljs-type">char</span> <span class="hljs-variable">c</span> <span class="hljs-operator">=</span> qq.charAt(<span class="hljs-number">0</span>);
+        <span class="hljs-keyword">if</span>(c == <span class="hljs-string">'0'</span>){
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<span class="hljs-comment">//验证通过</span>
+    }
+    
+}</code></pre></div>
+<ul>
+<li>使用正则表达式验证：</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">Scanner</span> <span class="hljs-variable">sc</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Scanner</span>(System.in);
+        
+        System.out.println(<span class="hljs-string">"请输入你的QQ号码："</span>);
+        <span class="hljs-type">String</span> <span class="hljs-variable">qq</span> <span class="hljs-operator">=</span> sc.next();
+        
+        System.out.println(checkQQ2(qq));
+    }
+    
+    <span class="hljs-comment">//使用正则表达式验证</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">checkQQ2</span><span class="hljs-params">(String qq)</span>{
+        <span class="hljs-type">String</span> <span class="hljs-variable">regex</span> <span class="hljs-operator">=</span> <span class="hljs-string">"[1-9]\\d{4,14}"</span>;<span class="hljs-comment">//正则表达式</span>
+        <span class="hljs-keyword">return</span> qq.matches(regex);
+    }
+    
+}</code></pre></div>
+<p>上面程序checkQQ2()方法中String类型的变量regex就存储了一个"正则表达式 "，而这个正则表达式就描述了我们需要的三个规则。matches()方法是String类的一个方法，用于接收一个正则表达式，并将"本对象"与参数"正则表达式"进行匹配，如果本对象符合正则表达式的规则，则返回true，否则返回false。</p>
+<p><strong>我们接下来就重点学习怎样写正则表达式</strong></p>
+<h2 id="52-正则表达式-字符类">5.2 正则表达式-字符类</h2>
+<ul>
+<li>
+<p>语法示例：</p>
+<ol>
+<li>[abc]：代表a或者b，或者c字符中的一个。</li>
+<li>[^abc]：代表除a,b,c以外的任何字符。</li>
+<li>[a-z]：代表a-z的所有小写字符中的一个。</li>
+<li>[A-Z]：代表A-Z的所有大写字符中的一个。</li>
+<li>[0-9]：代表0-9之间的某一个数字字符。</li>
+<li>[a-zA-Z0-9]：代表a-z或者A-Z或者0-9之间的任意一个字符。</li>
+<li>[a-dm-p]：a 到 d 或 m 到 p之间的任意一个字符。</li>
+</ol>
+</li>
+<li>
+<p>代码示例：</p>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> <span class="hljs-string">"ead"</span>;
+        
+        <span class="hljs-comment">//1.验证str是否以h开头，以d结尾，中间是a,e,i,o,u中某个字符</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">regex</span> <span class="hljs-operator">=</span> <span class="hljs-string">"h[aeiou]d"</span>;
+        System.out.println(<span class="hljs-string">"1."</span> + str.matches(regex));
+        
+        <span class="hljs-comment">//2.验证str是否以h开头，以d结尾，中间不是a,e,i,o,u中的某个字符</span>
+        regex = <span class="hljs-string">"h[^aeiou]d"</span>;
+        System.out.println(<span class="hljs-string">"2."</span> +  str.matches(regex));
+        
+        <span class="hljs-comment">//3.验证str是否a-z的任何一个小写字符开头，后跟ad</span>
+        regex = <span class="hljs-string">"[a-z]ad"</span>;
+        System.out.println(<span class="hljs-string">"3."</span> + str.matches(regex));
+        
+        <span class="hljs-comment">//4.验证str是否以a-d或者m-p之间某个字符开头，后跟ad</span>
+        regex = <span class="hljs-string">"[[a-d][m-p]]ad"</span>;
+        System.out.println(<span class="hljs-string">"4."</span> + str.matches(regex));
+    }
+}
+</code></pre></div>
+<h2 id="53-正则表达式-逻辑运算符">5.3 正则表达式-逻辑运算符</h2>
+<ul>
+<li>
+<p>语法示例：</p>
+<ol>
+<li>&amp;&amp;：并且</li>
+<li>|    ：或者</li>
+</ol>
+</li>
+<li>
+<p>代码示例：</p>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> <span class="hljs-string">"had"</span>;
+        
+        <span class="hljs-comment">//1.要求字符串是否是除a、e、i、o、u外的其它小写字符开头，后跟ad</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">regex</span> <span class="hljs-operator">=</span> <span class="hljs-string">"[a-z&amp;&amp;[^aeiou]]ad"</span>;
+        System.out.println(<span class="hljs-string">"1."</span> + str.matches(regex));
+        
+        <span class="hljs-comment">//2.要求字符串是aeiou中的某个字符开头，后跟ad</span>
+        regex = <span class="hljs-string">"[a|e|i|o|u]ad"</span>;<span class="hljs-comment">//这种写法相当于：regex = "[aeiou]ad";</span>
+        System.out.println(<span class="hljs-string">"2."</span> + str.matches(regex));
+    }
+}
+</code></pre></div>
+<h2 id="54-正则表达式-预定义字符">5.4 正则表达式-预定义字符</h2>
+<ul>
+<li>
+<p>语法示例：</p>
+<ol>
+<li>“.” ： 匹配任何字符。</li>
+<li>“\d”：任何数字[0-9]的简写；</li>
+<li>“\D”：任何非数字[^0-9]的简写；</li>
+<li>“\s”： 空白字符：[ \t\n\x0B\f\r] 的简写</li>
+<li>“\S”： 非空白字符：[^\s] 的简写</li>
+<li>“\w”：单词字符：[a-zA-Z_0-9]的简写</li>
+<li>“\W”：非单词字符：[^\w]</li>
+</ol>
+</li>
+<li>
+<p>代码示例：</p>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> <span class="hljs-string">"258"</span>;
+        
+        <span class="hljs-comment">//1.验证str是否3位数字</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">regex</span> <span class="hljs-operator">=</span> <span class="hljs-string">"\\d\\d\\d"</span>;
+        System.out.println(<span class="hljs-string">"1."</span> + str.matches(regex));
+        
+        <span class="hljs-comment">//2.验证手机号：1开头，第二位：3/5/8，剩下9位都是0-9的数字</span>
+        str = <span class="hljs-string">"13513153355"</span>;<span class="hljs-comment">//要验证的字符串</span>
+        regex = <span class="hljs-string">"1[358]\\d\\d\\d\\d\\d\\d\\d\\d\\d"</span>;<span class="hljs-comment">//正则表达式</span>
+        System.out.println(<span class="hljs-string">"2."</span> + str.matches(regex));
+        
+        <span class="hljs-comment">//3.验证字符串是否以h开头，以d结尾，中间是任何字符</span>
+        str = <span class="hljs-string">"had"</span>;<span class="hljs-comment">//要验证的字符串</span>
+        regex = <span class="hljs-string">"h.d"</span>;<span class="hljs-comment">//正则表达式</span>
+        System.out.println(<span class="hljs-string">"3."</span> + str.matches(regex));
+        
+        <span class="hljs-comment">//4.验证str是否是：had.</span>
+        str = <span class="hljs-string">"had."</span>;<span class="hljs-comment">//要验证的字符串</span>
+        regex = <span class="hljs-string">"had\\."</span>;<span class="hljs-comment">//\\.代表'.'符号，因为.在正则中被预定义为"任意字符"，不能直接使用</span>
+        System.out.println(<span class="hljs-string">"4."</span> + str.matches(regex));
+        
+    }
+}</code></pre></div>
+<h2 id="55-正则表达式-数量词">5.5 正则表达式-数量词</h2>
+<ul>
+<li>
+<p>语法示例：</p>
+<ol>
+<li>X? : 0次或1次</li>
+<li>X* : 0次到多次</li>
+<li>X+ : 1次或多次</li>
+<li>X{n} : 恰好n次</li>
+<li>X{n,} : 至少n次</li>
+<li>X{n,m}: n到m次(n和m都是包含的)</li>
+</ol>
+</li>
+<li>
+<p>代码示例：</p>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> <span class="hljs-string">""</span>;
+        
+        <span class="hljs-comment">//1.验证str是否是三位数字</span>
+        str = <span class="hljs-string">"012"</span>;
+        <span class="hljs-type">String</span> <span class="hljs-variable">regex</span> <span class="hljs-operator">=</span> <span class="hljs-string">"\\d{3}"</span>;
+        System.out.println(<span class="hljs-string">"1."</span> + str.matches(regex));
+        
+        <span class="hljs-comment">//2.验证str是否是多位数字</span>
+        str = <span class="hljs-string">"88932054782342"</span>;
+        regex = <span class="hljs-string">"\\d+"</span>;
+        System.out.println(<span class="hljs-string">"2."</span> + str.matches(regex));
+        
+        <span class="hljs-comment">//3.验证str是否是手机号：</span>
+        str = <span class="hljs-string">"13813183388"</span>;
+        regex = <span class="hljs-string">"1[358]\\d{9}"</span>;
+        System.out.println(<span class="hljs-string">"3."</span> + str.matches(regex));
+        
+        <span class="hljs-comment">//4.验证小数:必须出现小数点，但是只能出现1次</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">s2</span> <span class="hljs-operator">=</span> <span class="hljs-string">"3.1"</span>;
+        regex = <span class="hljs-string">"\\d*\\.{1}\\d+"</span>;
+        System.out.println(<span class="hljs-string">"4."</span> + s2.matches(regex));
+        
+        <span class="hljs-comment">//5.验证小数：小数点可以不出现，也可以出现1次</span>
+        regex = <span class="hljs-string">"\\d+\\.?\\d+"</span>;
+        System.out.println(<span class="hljs-string">"5."</span> + s2.matches(regex));
+        
+        <span class="hljs-comment">//6.验证小数：要求匹配：3、3.、3.14、+3.14、-3.</span>
+        s2 = <span class="hljs-string">"-3."</span>;
+        regex = <span class="hljs-string">"[+-]\\d+\\.?\\d*"</span>;
+        System.out.println(<span class="hljs-string">"6."</span> + s2.matches(regex));
+        
+        <span class="hljs-comment">//7.验证qq号码：1).5--15位；2).全部是数字;3).第一位不是0</span>
+        s2 = <span class="hljs-string">"1695827736"</span>;
+        regex = <span class="hljs-string">"[1-9]\\d{4,14}"</span>;
+        System.out.println(<span class="hljs-string">"7."</span> + s2.matches(regex));
+    }
+}
+</code></pre></div>
+<h2 id="56-正则表达式-分组括号">5.6 正则表达式-分组括号( )</h2>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> <span class="hljs-string">"DG8FV-B9TKY-FRT9J-99899-XPQ4G"</span>;
+        
+        <span class="hljs-comment">//验证这个序列号：分为5组，每组之间使用-隔开，每组由5位A-Z或者0-9的字符组成</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">regex</span> <span class="hljs-operator">=</span> <span class="hljs-string">"([A-Z0-9]{5}-){4}[A-Z0-9]{5}"</span>;
+        System.out.println(str.matches(regex));
+    }
+}
+</code></pre></div>
+<h2 id="57-string的split方法中使用正则表达式">5.7 String的split方法中使用正则表达式</h2>
+<ul>
+<li>
+<p>String类的split()方法原型：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> String[] split(String regex)<span class="hljs-comment">//参数regex就是一个正则表达式。可以将当前字符串中匹配regex正则表达式的符号作为"分隔符"来切割字符串。</span></code></pre></div>
+</li>
+<li>
+<p>代码示例：</p>
+</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> <span class="hljs-string">"18  4 567       99     56"</span>;
+        String[] strArray = str.split(<span class="hljs-string">" +"</span>);
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; strArray.length; i++) {
+            System.out.println(strArray[i]);
+        }
+    }
+}
+</code></pre></div>
+<h2 id="58-string类的replaceall方法中使用正则表达式">5.8 String类的replaceAll方法中使用正则表达式</h2>
+<ul>
+<li>String类的replaceAll()方法原型：</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> String <span class="hljs-title function_">replaceAll</span><span class="hljs-params">(String regex,String newStr)</span><span class="hljs-comment">//参数regex就是一个正则表达式。可以将当前字符串中匹配regex正则表达式的字符串替换为newStr。</span></code></pre></div>
+<ul>
+<li>代码示例：</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Demo</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-comment">//将下面字符串中的"数字"替换为"*"</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> <span class="hljs-string">"jfdk432jfdk2jk24354j47jk5l31324"</span>;
+        System.out.println(str.replaceAll(<span class="hljs-string">"\\d+"</span>, <span class="hljs-string">"*"</span>));
+    }
+}</code></pre></div>
+</div>
+      </article>
+    </div>
+  </body>
+</html>

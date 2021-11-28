@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>day04-包装类、String类、引用类型小结、综合案例 - zblog</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zblog</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">day04-包装类、String类、引用类型小结、综合案例</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1637939087304"
+                  >2021-11-26 23:04</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1637942288056"
+                  >2021-11-26 23:58</time
+                ></span
+              >
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><h2 id="第一章biginteger类">第一章：BigInteger类</h2>
+<h3 id="11-biginteger类概述及使用了解">1.1 BigInteger类概述及使用【了解】</h3>
+<ol>
+<li>java.math.BigInteger(类)：</li>
+</ol>
+<blockquote>
+<p>它可以表示"任意大的整数"，通常可以将一个"字符串"转换为一
+个"整数"，并可以进行运算。<br />
+<strong>long以内的整数运算，使用"基本类型"就可以。如果超出了long的范围，就需要使用
+BigInteger运算。</strong></p>
+</blockquote>
+<ol start="2">
+<li>构造方法：</li>
+</ol>
+<blockquote>
+<p>public BigInteger(String val)</p>
+</blockquote>
+<ol start="3">
+<li>成员方法：</li>
+</ol>
+<blockquote>
+<ol>
+<li>BigInteger <strong>add</strong>(BigInteger value) 返回其值为 (this + val) 的 BigInteger，超大整数加法运算</li>
+<li>BigInteger <strong>subtract</strong>(BigInteger value)返回其值为 (this - val) 的 BigInteger，超大整数减法运算</li>
+<li>BigInteger <strong>multiply</strong>(BigInteger value) 返回其值为 (this * val) 的 BigInteger，超大整数乘法运算</li>
+<li>BigInteger <strong>divide</strong>(BigInteger value) 返回其值为 (this / val) 的 BigInteger，超大整数除法运算，除不尽取整数部分</li>
+<li>BigInteger public BigInteger <strong>remainder</strong>(BigInteger val)：返回值为(this % val)</li>
+</ol>
+</blockquote>
+<p><img src="/_resources/2e00300939b146f4a90eab0c1f580027.png" /></p>
+<h2 id="第二章bigdecimal类">第二章：BigDecimal类</h2>
+<h3 id="21-bigdecimal解决浮点运算的问题">2.1 BigDecimal解决浮点运算的问题</h3>
+<ol>
+<li>之前我们使用"基本数据类型的float和double"进行浮点运算时，会出现：精度丢失的问题。</li>
+</ol>
+<p>例如： double a = 0.09;</p>
+<p>double b = 0.01;</p>
+<p>System.out.println(a + b);// 0.09999999999999999(将十进制小数转换为二进制小数的过程导致的)</p>
+<p><strong>所以：以后再涉及到"浮点运算"，不要使用基本数据类型，改用BigDecimal！！！！</strong></p>
+<p><strong>2. 构造方法：</strong></p>
+<blockquote>
+<p><strong>1. BigDecimal(double val)：【不建议使用】，参数是一个double值，在转存时仍然会出现精度丢失的问题。</strong><br />
+<strong>2. public BigDecimal(String val)：【建议】，不会出现精度丢失的问题。</strong></p>
+</blockquote>
+<p><strong>3. 成员方法：</strong>
+<img src="/_resources/6425ac7251fb4db085e66f589ccbe83a.png" /></p>
+<h2 id="第三章-arrays类">第三章 Arrays类</h2>
+<h3 id="31-arrays类概述及使用">3.1 Arrays类概述及使用</h3>
+<ol>
+<li>java.util.Arrays(类)：它里面包含了一些对数组操作的方法。</li>
+</ol>
+<p>它的方法都是"静态"的，使用的时候，通过类名就可以直接访问方法。</p>
+<ol start="2">
+<li>常用方法：</li>
+</ol>
+<blockquote>
+<ol>
+<li>public static String toString(int[] a)：可以将一个int[]数组转换为一个String。</li>
+<li>public static void sort(int[] a)：对参数数组进行"升序排序(小到大)"</li>
+<li>示例代码：</li>
+</ol>
+</blockquote>
+<p><img src="/_resources/453e25927ac244239c9b5d0952fb4734.png" /></p>
+<h2 id="第四章包装类">第四章：包装类</h2>
+<h3 id="41-包装类的概念">4.1 包装类的概念</h3>
+<ol>
+<li>
+<p>Java四类八种的基本数据类型，都对应有"包装类"：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">基本类型</th>
+<th style="text-align:center">包装类型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">byte</td>
+<td style="text-align:center">Byte</td>
+</tr>
+<tr>
+<td style="text-align:center">short</td>
+<td style="text-align:center">Short</td>
+</tr>
+<tr>
+<td style="text-align:center">int</td>
+<td style="text-align:center">Integer</td>
+</tr>
+<tr>
+<td style="text-align:center">long</td>
+<td style="text-align:center">Long</td>
+</tr>
+<tr>
+<td style="text-align:center">float</td>
+<td style="text-align:center">Float</td>
+</tr>
+<tr>
+<td style="text-align:center">double</td>
+<td style="text-align:center">Dobule</td>
+</tr>
+<tr>
+<td style="text-align:center">char</td>
+<td style="text-align:center">Character</td>
+</tr>
+<tr>
+<td style="text-align:center">boolean</td>
+<td style="text-align:center">Boolean</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>这些包装类型的"每个对象"都可以封装一个此类型的"数据"，它们的作用：它们内部也包含了一些方法，可以对此类型数据做操作。</p>
+</li>
+<li>
+<p>以Integer为例：</p>
+</li>
+</ol>
+<ul>
+<li>A. Integer的构造方法：【了解，不建议使用，改用此类内部的一些"静态方法"】</li>
+</ul>
+<blockquote>
+<ol>
+<li>Integer(int val)：将一个int值转换为一个Integer对象。</li>
+<li>Integer(String val)：将一个String转换为一个Integer对象。</li>
+</ol>
+</blockquote>
+<ul>
+<li>B. Integer的常用方法：【建议使用，代替构造方法】</li>
+</ul>
+<blockquote>
+<ol>
+<li>public static Integer valueOf(int i)：将一个int值转换为一个Integer对象。【了解】</li>
+<li>public static Integer valueOf(String s)：将一个String转换为一个Integer对象。【了解】</li>
+<li>public int intValue()：普通成员方法，必须通过对象名调用。获取此Integer对象内部的int值。【了解】</li>
+<li>public static int parseInt(String s)：可以将一个String转换为int值【掌握】</li>
+<li>public static String toString(int i)：可以将一个int值转换为String类型【掌握】</li>
+<li>示例代码：</li>
+</ol>
+</blockquote>
+<p><img src="/_resources/668a2c361c3f45f6b6302fcb71c2f290.png" /></p>
+<h3 id="42-自动装箱和自动拆箱重点">4.2 自动装箱和自动拆箱【重点】</h3>
+<ol>
+<li>自动装箱：将一个"基本类型"的值，直接赋给一个它的"包装类型"的变量，这个过程叫：自动装箱。</li>
+</ol>
+<p>Integer intObj = 10;//语法糖，编译后：Integer intObj = Integer.valueOf(10);</p>
+<ol start="2">
+<li>自动拆箱：将一个"包装类型"，直接赋给一个它的"基本类型"的变量，这个过程叫：自动拆箱。</li>
+</ol>
+<p>int a = intObj;//语法糖，编译后：int a = intObj.intValue();</p>
+<p><ins>intObj;//先拆箱，然后</ins>，然后再装箱</p>
+<ol start="3">
+<li>作用：使用ArrayList&lt;Integer&gt; list = new ArrayList&lt;&gt;();比较方便。</li>
+</ol>
+<p><img src="/_resources/4dcb1e3d657d4a16bfb61103d30a382c.png" /></p>
+<ol start="4">
+<li>强烈建议：我们的"实体Bean(例如：Student类、Phone类、Cat类…)“这些类中的"成员属性”，如果之前用的是"基本类型"，都建议改为它们的"包装类型"</li>
+</ol>
+<p><img src="/_resources/539e2b02b2ed4cfbbe1a8e6e27e23851.png" /></p>
+<ol start="5">
+<li>一个面试题：</li>
+</ol>
+<p><img src="/_resources/226c141771e3434a8635b4b7b7bdb2e9.png" /></p>
+<ol>
+<li>通过这里例子大家要知道：包装类型，如果判断是否相等，不要用==判断，不自动拆箱，仍然判断的是地址</li>
+</ol>
+<p>其它情况：+、-、*、/、%、或者判断大小等，都会自动拆箱，然后再做运算，只有"判断相等"，不要用==</p>
+<p>所以：包装类型，如果要判断相等，用它们的equals()方法。</p>
+<ol start="2">
+<li>以下包装类内部都有缓存：</li>
+</ol>
+<p>Byte、Short、Integer、Long、Character(ASCII范围：0-127)</p>
+<h3 id="43-包装类常见应用">4.3 包装类常见应用</h3>
+<ol>
+<li>将一个字符串，转换为某种基本类型的数据，这时我们需要使用"包装类"：【重点掌握】</li>
+</ol>
+<p>例如：</p>
+<p>String strAge = “24”;</p>
+<p>int age = Integer.<strong>parseInt</strong>(strAge);</p>
+<p>除Character外，其它七种包装类都有parseXxxx(String s)：可以将字符串转换为对应类型：</p>
+<p>Byte.<strong>parseByte</strong>(String s)</p>
+<p>Short.<strong>parseShort</strong>(String s)</p>
+<p>Integer.<strong>parseInt</strong>(String s)</p>
+<p>Long.<strong>parseLong</strong>(String s)</p>
+<p>Float.<strong>parseFloat</strong>(String s)</p>
+<p>Double.<strong>parseDouble</strong>(String s)</p>
+<p>Boolean.<strong>parseBoolean</strong>(String s)</p>
+<ol start="2">
+<li>将某种类型的数据转换为字符串：</li>
+</ol>
+<p>int a = 10;</p>
+<p>String str = Integer.<strong>toString</strong>(a);</p>
+<p>任何包装类都有toString(基本类型 n)，都可以将一个基本类型，转换为字符串。</p>
+<h2 id="第五章string类的更多方法">第五章：String类的更多方法</h2>
+<h3 id="501-string类_concat_字符串连接了解">5.01 String类_concat_字符串连接【了解】</h3>
+<ol>
+<li>我们之前学过字符串拼接，使用+符号，或者使用：StringBuilder，String类本身也提供一个方法concat，也可以做字符串拼接，但没有StringBuilder的效率高，所以，仍然建议大家使用StringBuilder。</li>
+</ol>
+<p><img src="/_resources/9a055d44694440bf9d7e6680be7c5822.png" /></p>
+<ol start="2">
+<li>
+<p>说明：</p>
+<ol>
+<li>
+<p>concat方法只能和String类型做拼接，比+符号和StringBuilder受限；</p>
+</li>
+<li>
+<p>效率上：最低：+符号；其次concat；最高：StringBuilder【建议】</p>
+</li>
+</ol>
+</li>
+</ol>
+<h3 id="502-string类_contains_判断包含">5.02 String类_contains_判断包含</h3>
+<ol>
+<li>原型：public boolean contains(CharSequence s)：判断参数，在当前字符串中是否存在</li>
+</ol>
+<p>记住：在学习类库中的方法时，如果形参是一个"接口"或者"抽象类"类型，就要找他们的"子类"，并传入一个子类对象。</p>
+<p><img src="/_resources/343ba8f101834bc5b503abeccab37935.png" /></p>
+<h3 id="503-string类_-startswith_endswith_判断是否以指定的字符串开头_结尾">5.03 String类_ startsWith_endsWith_判断是否以指定的字符串开头_结尾</h3>
+<blockquote>
+<ol>
+<li>public boolean startsWith(String prefix)：判断当前字符串是否以参数字符串开头。</li>
+<li>public boolean endsWith(String suffix)：判断当前字符串是否以参数字符串结尾。</li>
+</ol>
+</blockquote>
+<p><img src="/_resources/4054c9740e99449a84ee7a9d90e921fe.png" /></p>
+<h3 id="504-string类_indexof_判断字符串第一次出现的位置">5.04 String类_indexOf_判断字符串第一次出现的位置</h3>
+<blockquote>
+<ol>
+<li>public int indexOf(String str)：从头开始检索参数字符串，并返回参数字符串出现的索引位置，如果没有出现，返回-1</li>
+</ol>
+</blockquote>
+<p><img src="/_resources/d1cbd15d662b4665bbdf4b2b1b81ec39.png" /></p>
+<h3 id="505-string类_lastindexof_判断字符串最后一次出现的位置">5.05 String类_lastIndexOf_判断字符串最后一次出现的位置</h3>
+<blockquote>
+<ol>
+<li>public int lastIndexOf(String str)：判断字符串最后一次出现的索引位置。</li>
+</ol>
+</blockquote>
+<p><img src="/_resources/e7757b27656e4f8288dcafe5599287e1.png" /></p>
+<h3 id="506-string类_tochararray_将字符串转换为字符数组">5.06 String类_toCharArray_将字符串转换为字符数组</h3>
+<blockquote>
+<ol>
+<li>public char[] toCharArray()：将当前字符串转换为char[]数组。</li>
+</ol>
+</blockquote>
+<p><img src="/_resources/0d476f41777e4ef698e09bf017b55684.png" /></p>
+<h3 id="507-string类_tolowercase和touppercase_将字符串转换为小写和大写">5.07 String类_toLowerCase和toUpperCase_将字符串转换为小写和大写</h3>
+<blockquote>
+<ol>
+<li>public String toLowerCase()：将字符串中的英文字母转换为小写。</li>
+<li>public String toUpperCase()：将字符串中的英文字母转换为大写。</li>
+</ol>
+</blockquote>
+<p><img src="/_resources/345ddf2625d342fb867959144a6f9f51.png" /></p>
+<h3 id="508-string类_trim_去掉前后空格">5.08 String类_trim_去掉前后空格</h3>
+<blockquote>
+<ol>
+<li>public String trim()：删除前后的空格，并返回一个新字符串。但不去掉中间的空格。</li>
+</ol>
+</blockquote>
+<p><img src="/_resources/ce1940387d3947eeb0337d2d531e36c9.png" /></p>
+<h3 id="509-string类_split_以指定的分隔符切割字符串">5.09 String类_split_以指定的分隔符切割字符串</h3>
+<blockquote>
+<ol>
+<li>public String[] split(String regex)：以参数为分隔符，切割字符串</li>
+</ol>
+</blockquote>
+<p><img src="/_resources/41d8c06e83614a69877950041285c597.png" /></p>
+<h2 id="第六章引用类型使用小结">第六章：引用类型使用小结</h2>
+<h3 id="61类-抽象类-接口作为参数和返回值">6.1"类"、“抽象类”、"接口"作为参数和返回值</h3>
+<ol>
+<li>方法的参数：</li>
+<li>方法的返回值：</li>
+</ol>
+<p><img src="/_resources/2cd72cf45e6d43739899308d534dc253.png" /></p>
+<h3 id="62类-抽象类-接口作为成员属性">6.2"类"、“抽象类”、"接口"作为成员属性</h3>
+<p><img src="/_resources/eca9778f72454fe1be321dee053649c3.png" /></p>
+<hr />
+<h2 id="第六章总结">第六章：总结</h2>
+<p><strong>1. 能够说出BigInteger可以解决的问题</strong></p>
+<blockquote>
+<p><strong>对于"大于long型的整数"可以使用BigInteger存储，并运算。</strong></p>
+</blockquote>
+<p><strong>2. 能够说出BigDecimal可以解决的问题</strong></p>
+<blockquote>
+<p><strong>浮点运算时，精度丢失的问题</strong></p>
+</blockquote>
+<p><strong>3. 能够使用Arrays类的sort方法</strong></p>
+<blockquote>
+<p><strong>int[] arr = {1,432,4,325,243,154,363,43,7657};</strong><br />
+<strong>Arrays.sort(arr);//排序</strong><br />
+<strong>for(int i = 0;i &lt; arr.length ; i++){</strong><br />
+<strong>System.out.println(arr[i]);//排序后的</strong><br />
+<strong>}</strong></p>
+</blockquote>
+<p><strong>4. 能够使用Arrays类的toString方法</strong></p>
+<blockquote>
+<p><strong>int[] arr = {1,432,52,43,2653,52};</strong><br />
+<strong>System.out.println(Arrays.toString(arr));</strong></p>
+</blockquote>
+<p><strong>5. 能够说出自动装箱、自动拆箱的概念</strong></p>
+<blockquote>
+<p><strong>1. 自动装箱：将基本类型的值直接赋给包装类型</strong><br />
+<strong>Integer intObj = 10;</strong><br />
+<strong>2. 自动拆箱：将包装类型直接赋给基本类型</strong><br />
+<strong>int</strong><br />
+<strong>n = intObj;</strong></p>
+</blockquote>
+<p><strong>6. 能够将基本类型转换为对应的字符串</strong></p>
+<blockquote>
+<p><strong>int a = 10;</strong><br />
+<strong>String s = a + “”;//第一种方式</strong><br />
+<strong>String s1 = Integer.toString(a);//第二种方式</strong></p>
+</blockquote>
+<p><strong>7. 能够将字符串转换为对应的基本类型</strong></p>
+<blockquote>
+<p><strong>String s = “24”;</strong><br />
+<strong>int age = Integer.parseInt(s);</strong></p>
+</blockquote>
+<p><strong>8. 能够说出String类常用方法的功能及使用</strong></p>
+<blockquote>
+<p><strong>一共讲了10个</strong></p>
+</blockquote>
+<p><strong>9. 能够在不同的位置使用引用类型</strong></p>
+<blockquote>
+<p><strong>1. 方法的形参、返回值都可以是：类、抽象类、接口类型【见demo16】</strong><br />
+<strong>2. 方法的成员属性，也可以是：类、抽象类、接口类型【见demo17】</strong></p>
+</blockquote>
+<h2 id="第七章复习">第七章：复习</h2>
+<h3 id="1-练习">1. 练习：</h3>
+<ul>
+<li>
+<ol>
+<li>请用户输入一个生日字符串，例如：”1998-3-5”，请编程计算到今年，用户多少周岁？不考虑生日 用String和包装类做。今年不要用2020。</li>
+</ol>
+</li>
+<li>
+<ol start="2">
+<li>有以下字符串： String str = ”jfewjavajfiewgjavajfioewjgjava”; 请编程计算字符串中共出现多少次”java” 用substring()实现一个版本；substring() + indexOf()</li>
+</ol>
+</li>
+</ul>
+<div><pre class="hljs"><code>    <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> “jfewjavajfiewgjavajfioewjgjavajava”;
+    <span class="hljs-type">int</span> <span class="hljs-variable">count</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">while</span>(<span class="hljs-literal">true</span>){
+        <span class="hljs-type">int</span> <span class="hljs-variable">index</span> <span class="hljs-operator">=</span> str.indexOf(“java”);
+        <span class="hljs-keyword">if</span>(index != -<span class="hljs-number">1</span>){
+            count++;
+            str = str.substring(index + <span class="hljs-number">1</span>);
+        }<span class="hljs-keyword">else</span>{
+            <span class="hljs-keyword">break</span>;
+        }
+    }
+    System.out.println(count);</code></pre></div>
+<hr />
+<div><pre class="hljs"><code> 用indexOf()实现一个版本；参考API--&gt;String类的<span class="hljs-keyword">public</span> <span class="hljs-type">int</span> indexOf​(String s, <span class="hljs-type">int</span> fromIndex)方法，不需要substring() </code></pre></div>
+<hr />
+<div><pre class="hljs"><code>    <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> “jfewjavajfiewgjavajfioewjgjavajava”;
+    <span class="hljs-type">int</span> <span class="hljs-variable">count</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;<span class="hljs-comment">//</span>
+    <span class="hljs-type">int</span> <span class="hljs-variable">startIndex</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;
+    <span class="hljs-type">int</span> <span class="hljs-variable">index</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;
+    <span class="hljs-keyword">while</span> ((index = str.indexOf(“java”, startIndex)) != -<span class="hljs-number">1</span>) {
+        count++;
+        startIndex = index + <span class="hljs-number">1</span>;
+    }
+    System.out.println(count);</code></pre></div>
+<hr />
+<h2 id="第八章综合案例-学员管理系统_继承版">第八章：综合案例-学员管理系统_继承版</h2>
+<p>4.1 学员管理系统_项目演示</p>
+<p>4.2 学员管理系统_类结构设计</p>
+<p>4.3 学员管理系统_创建项目<br />
+1).com.itheima.main包：放启动类：MainApp，包含main()方法<br />
+2).com.itheima.superclass包：放父类：Person类<br />
+3).com.itheima.student包：放Student模块相关的类，本项目中只有一个Student实体类<br />
+4).com.itheima.teacher包：放Teacher模块相关的类，本项目中只有一个Teacher实体类<br />
+5).com.itheima.utils包：放工具类。</p>
+<p>4.4 学员管理系统_创建基础实体类</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.itheima.superclass;
+
+<span class="hljs-keyword">import</span> com.itheima.utils.Utils;
+
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Person</span> {
+    <span class="hljs-keyword">private</span> <span class="hljs-type">int</span> id;<span class="hljs-comment">//编号</span>
+    <span class="hljs-keyword">private</span> String name;<span class="hljs-comment">//姓名</span>
+    <span class="hljs-keyword">private</span> String sex;<span class="hljs-comment">//性别</span>
+    <span class="hljs-keyword">private</span> String birthday;<span class="hljs-comment">//出生日期</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-type">int</span> age;<span class="hljs-comment">//年龄--通过出生日期换算</span>
+    <span class="hljs-comment">//构造方法</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Person</span><span class="hljs-params">()</span> {
+    }
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Person</span><span class="hljs-params">(<span class="hljs-type">int</span> id,String name, String sex, String birthday)</span>  {
+        <span class="hljs-built_in">this</span>.id = id;
+        <span class="hljs-built_in">this</span>.name = name;
+        <span class="hljs-built_in">this</span>.sex = sex;
+        <span class="hljs-built_in">this</span>.birthday = birthday;
+    }
+    <span class="hljs-comment">//getter/setter</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getId</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> id;
+    }
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setId</span><span class="hljs-params">(<span class="hljs-type">int</span> id)</span> {
+        <span class="hljs-built_in">this</span>.id = id;
+    }
+
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getName</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> name;
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setName</span><span class="hljs-params">(String name)</span> {
+        <span class="hljs-built_in">this</span>.name = name;
+    }
+
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getSex</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> sex;
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setSex</span><span class="hljs-params">(String sex)</span> {
+        <span class="hljs-built_in">this</span>.sex = sex;
+    }
+
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getBirthday</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> birthday;
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setBirthday</span><span class="hljs-params">(String birthday)</span> {
+        <span class="hljs-built_in">this</span>.birthday = birthday;
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getAge</span><span class="hljs-params">()</span>  {
+        <span class="hljs-comment">//通过生日计算年龄</span>
+        age = Utils.birthdayToAge(<span class="hljs-built_in">this</span>.getBirthday());
+        <span class="hljs-keyword">return</span> age;
+    }
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setAge</span><span class="hljs-params">(<span class="hljs-type">int</span> age)</span> {
+        <span class="hljs-built_in">this</span>.age = age;
+    }
+
+    <span class="hljs-comment">//重写toString，同时作为模板</span>
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">toString</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span>  id + <span class="hljs-string">"\t\t"</span> +
+                name + <span class="hljs-string">"\t\t"</span> +
+                sex + <span class="hljs-string">"\t\t"</span> +
+                birthday + <span class="hljs-string">"\t"</span> +
+                <span class="hljs-built_in">this</span>.getAge() + <span class="hljs-string">"\t\t"</span> +
+                <span class="hljs-string">" 我是一名："</span> + getType() + <span class="hljs-string">" 我的工作是："</span> + getWork();
+    }
+    <span class="hljs-comment">//模板用到的两个方法</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> String <span class="hljs-title function_">getWork</span><span class="hljs-params">()</span>;
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> String <span class="hljs-title function_">getType</span><span class="hljs-params">()</span>;
+}
+</code></pre></div>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.itheima.student;
+
+<span class="hljs-keyword">import</span> com.itheima.superclass.Person;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Student</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Person</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Student</span><span class="hljs-params">()</span> {
+    }
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Student</span><span class="hljs-params">(<span class="hljs-type">int</span> id, String name, String sex, String birthday)</span> {
+        <span class="hljs-built_in">super</span>(id, name, sex, birthday);
+    }
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getWork</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"学习Java"</span>;
+    }
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getType</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"学生"</span>;
+    }
+}
+</code></pre></div>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.itheima.teacher;
+
+<span class="hljs-keyword">import</span> com.itheima.superclass.Person;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Teacher</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Person</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Teacher</span><span class="hljs-params">()</span> {
+    }
+    <span class="hljs-keyword">public</span> <span class="hljs-title function_">Teacher</span><span class="hljs-params">(<span class="hljs-type">int</span> id, String name, String sex, String birthday)</span> {
+        <span class="hljs-built_in">super</span>(id, name, sex, birthday);
+    }
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getWork</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"讲课"</span>;
+    }
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getType</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"老师"</span>;
+    }
+}
+</code></pre></div>
+<p>4.5 学员管理系统_工具类Utils的说明</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.itheima.utils;
+
+<span class="hljs-keyword">import</span> com.itheima.superclass.Person;
+
+<span class="hljs-keyword">import</span> java.text.ParseException;
+<span class="hljs-keyword">import</span> java.text.SimpleDateFormat;
+<span class="hljs-keyword">import</span> java.util.ArrayList;
+<span class="hljs-keyword">import</span> java.util.Calendar;
+<span class="hljs-keyword">import</span> java.util.Date;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Utils</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">int</span> stuId ;<span class="hljs-comment">//学员ID的初始值</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">int</span> teaId ;<span class="hljs-comment">//教师ID的初始值</span>
+    <span class="hljs-keyword">static</span> {
+        stuId = <span class="hljs-number">0</span>;
+        teaId = <span class="hljs-number">0</span>;
+        <span class="hljs-comment">//后期可以改为从文件/数据库读取初始值</span>
+    }
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-type">int</span> <span class="hljs-title function_">birthdayToAge</span><span class="hljs-params">(String birthday)</span>  {
+        <span class="hljs-type">Date</span> <span class="hljs-variable">birthDate</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;
+        <span class="hljs-keyword">try</span> {
+            birthDate = <span class="hljs-keyword">new</span> <span class="hljs-title class_">SimpleDateFormat</span>(<span class="hljs-string">"yyyy-MM-dd"</span>).parse(birthday);
+        } <span class="hljs-keyword">catch</span> (ParseException e) {
+            e.printStackTrace();
+            <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;
+        }
+        <span class="hljs-comment">//获取当前系统时间</span>
+        <span class="hljs-type">Calendar</span> <span class="hljs-variable">cal</span> <span class="hljs-operator">=</span> Calendar.getInstance();
+
+        <span class="hljs-type">Calendar</span> <span class="hljs-variable">birthCalendar</span> <span class="hljs-operator">=</span> Calendar.getInstance();
+        birthCalendar.setTime(birthDate);
+
+        <span class="hljs-comment">//如果出生日期大于当前时间，则抛出异常</span>
+        <span class="hljs-keyword">if</span> (cal.before(birthCalendar)) {
+            <span class="hljs-keyword">return</span> -<span class="hljs-number">1</span>;
+        }
+        <span class="hljs-comment">//取出系统当前时间的年、月、日部分</span>
+        <span class="hljs-type">int</span> <span class="hljs-variable">yearNow</span> <span class="hljs-operator">=</span> cal.get(Calendar.YEAR);
+        <span class="hljs-type">int</span> <span class="hljs-variable">monthNow</span> <span class="hljs-operator">=</span> cal.get(Calendar.MONTH);
+        <span class="hljs-type">int</span> <span class="hljs-variable">dayOfMonthNow</span> <span class="hljs-operator">=</span> cal.get(Calendar.DAY_OF_MONTH);
+
+        <span class="hljs-comment">//将日期设置为出生日期</span>
+        cal.setTime(birthDate);
+        <span class="hljs-comment">//取出出生日期的年、月、日部分</span>
+        <span class="hljs-type">int</span> <span class="hljs-variable">yearBirth</span> <span class="hljs-operator">=</span> cal.get(Calendar.YEAR);
+        <span class="hljs-type">int</span> <span class="hljs-variable">monthBirth</span> <span class="hljs-operator">=</span> cal.get(Calendar.MONTH);
+        <span class="hljs-type">int</span> <span class="hljs-variable">dayOfMonthBirth</span> <span class="hljs-operator">=</span> cal.get(Calendar.DAY_OF_MONTH);
+        <span class="hljs-comment">//当前年份与出生年份相减，初步计算年龄</span>
+        <span class="hljs-type">int</span> <span class="hljs-variable">age</span> <span class="hljs-operator">=</span> yearNow - yearBirth;
+        <span class="hljs-comment">//当前月份与出生日期的月份相比，如果月份小于出生月份，则年龄上减1，表示不满多少周岁</span>
+        <span class="hljs-keyword">if</span> (monthNow &lt;= monthBirth) {
+            <span class="hljs-comment">//如果月份相等，在比较日期，如果当前日，小于出生日，也减1，表示不满多少周岁</span>
+            <span class="hljs-keyword">if</span> (monthNow == monthBirth) {
+                <span class="hljs-keyword">if</span> (dayOfMonthNow &lt; dayOfMonthBirth) age--;
+            }<span class="hljs-keyword">else</span>{
+                age--;
+            }
+        }
+        <span class="hljs-keyword">return</span> age;
+
+    }
+    <span class="hljs-comment">//打印ArrayList&lt;? extends Person&gt;的方法</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">printPersonList</span><span class="hljs-params">(ArrayList&lt;? extends Person&gt; personList)</span> {
+        System.out.println(<span class="hljs-string">"************************************************************************************"</span>);
+        System.out.println(<span class="hljs-string">"编号\t\t姓名\t\t性别\t\t生日\t\t\t年龄\t\t描述"</span>);
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; personList.size(); i++) {
+            <span class="hljs-type">Person</span> <span class="hljs-variable">p</span> <span class="hljs-operator">=</span> personList.get(i);
+            System.out.println(personList.get(i));
+        }
+        System.out.println(<span class="hljs-string">"************************************************************************************"</span>);
+    }
+    <span class="hljs-comment">//打印Person的方法</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">printPerson</span><span class="hljs-params">(Person person)</span> {
+        System.out.println(<span class="hljs-string">"************************************************************************************"</span>);
+        System.out.println(<span class="hljs-string">"编号\t\t姓名\t\t性别\t\t生日\t\t\t年龄\t\t描述"</span>);
+        System.out.println(person );
+        System.out.println(<span class="hljs-string">"************************************************************************************"</span>);
+    }
+}
+</code></pre></div>
+<p>4.6 学员管理系统_主菜单和二级菜单实现</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.itheima.main;
+
+
+<span class="hljs-keyword">import</span> com.itheima.student.Student;
+<span class="hljs-keyword">import</span> com.itheima.teacher.Teacher;
+<span class="hljs-keyword">import</span> com.itheima.utils.Utils;
+
+<span class="hljs-keyword">import</span> java.util.ArrayList;
+<span class="hljs-keyword">import</span> java.util.Scanner;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MainApp</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        <span class="hljs-type">Scanner</span> <span class="hljs-variable">sc</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Scanner</span>(System.in);
+        <span class="hljs-comment">//学生集合</span>
+        ArrayList&lt;Student&gt; stuList = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();
+        <span class="hljs-comment">//教师集合</span>
+        ArrayList&lt;Teacher&gt; teaList = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();
+        <span class="hljs-comment">//主菜单</span>
+        <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) {
+            System.out.println(<span class="hljs-string">"*****************************************"</span>);
+            System.out.println(<span class="hljs-string">"* 1.学员信息管理   2.教师信息管理   3.退出 *"</span>);
+            System.out.println(<span class="hljs-string">"*****************************************"</span>);
+            <span class="hljs-type">int</span> <span class="hljs-variable">op</span> <span class="hljs-operator">=</span> sc.nextInt();
+            <span class="hljs-keyword">switch</span> (op) {
+                <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:
+                    studentManage(stuList,sc);
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:
+                    teacherManage(teaList,sc);
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>:
+                    System.out.println(<span class="hljs-string">"谢谢使用，拜拜！！"</span>);
+                    System.exit(<span class="hljs-number">0</span>);
+                <span class="hljs-keyword">default</span>:
+                    System.out.println(<span class="hljs-string">"你的输入有误，请重新输入！"</span>);
+                    <span class="hljs-keyword">break</span>;
+            }
+        }
+    }
+    <span class="hljs-comment">//教师信息管理-课堂练习</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">teacherManage</span><span class="hljs-params">(ArrayList&lt;Teacher&gt; teaList,Scanner sc)</span> {
+
+    }
+
+    <span class="hljs-comment">//学员信息管理</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">studentManage</span><span class="hljs-params">(ArrayList&lt;Student&gt; stuList,Scanner sc)</span> {
+        <span class="hljs-comment">//二级菜单</span>
+        <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) {
+            System.out.println(<span class="hljs-string">"------------------------------------------------------"</span>);
+            System.out.println(<span class="hljs-string">"【学员信息管理】"</span>);
+            System.out.println(<span class="hljs-string">"1.添加学员   2.修改学员   3.删除学员   4.查询学员   5.返回"</span>);
+            System.out.println();
+            System.out.println(<span class="hljs-string">"请输入功能序号："</span>);
+            <span class="hljs-type">int</span> <span class="hljs-variable">op</span> <span class="hljs-operator">=</span> sc.nextInt();
+            <span class="hljs-keyword">switch</span> (op) {
+                <span class="hljs-keyword">case</span> <span class="hljs-number">1</span>:
+                    addStudent(stuList, sc);
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">case</span> <span class="hljs-number">2</span>:
+                    updateStudent(stuList, sc);
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">case</span> <span class="hljs-number">3</span>:
+                    deleteStudent(stuList, sc);
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">case</span> <span class="hljs-number">4</span>:
+                    selectAll(stuList, sc);
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">case</span> <span class="hljs-number">5</span>:
+                    <span class="hljs-keyword">return</span>;
+                <span class="hljs-keyword">default</span>:
+                    System.out.println(<span class="hljs-string">"你的输入有误，请重新输入！"</span>);
+                    <span class="hljs-keyword">break</span>;
+            }
+        }
+    }
+    
+}
+</code></pre></div>
+<p>4.7 学员管理系统_添加学员</p>
+<div><pre class="hljs"><code> <span class="hljs-comment">//添加学员</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addStudent</span><span class="hljs-params">(ArrayList&lt;Student&gt; stuList, Scanner sc)</span> {
+        System.out.println(<span class="hljs-string">"请输入学员姓名："</span>);
+        <span class="hljs-type">String</span> <span class="hljs-variable">name</span> <span class="hljs-operator">=</span> sc.next();
+        System.out.println(<span class="hljs-string">"请输入性别："</span>);
+        <span class="hljs-type">String</span> <span class="hljs-variable">sex</span> <span class="hljs-operator">=</span> sc.next();
+        System.out.println(<span class="hljs-string">"请输入出生日期(yyyy-MM-dd)："</span>);
+        <span class="hljs-type">String</span> <span class="hljs-variable">birthday</span> <span class="hljs-operator">=</span> sc.next();
+
+        stuList.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Student</span>(++Utils.stuId,name,sex,birthday));
+
+        System.out.println(<span class="hljs-string">"【成功】学员信息添加成功！"</span>);
+    }</code></pre></div>
+<p>4.8 学员管理系统_查询学员</p>
+<div><pre class="hljs"><code><span class="hljs-comment">//查询所有学员</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">selectAll</span><span class="hljs-params">(ArrayList&lt;Student&gt; stuList, Scanner sc)</span> {
+        System.out.println(<span class="hljs-string">"【查询结果】"</span>);
+        <span class="hljs-keyword">if</span> (stuList.size() == <span class="hljs-number">0</span>) {
+            System.out.println(<span class="hljs-string">"无数据"</span>);
+            <span class="hljs-keyword">return</span>;
+        }
+        Utils.printPersonList(stuList);
+    }</code></pre></div>
+<p>4.9 学员管理系统__修改学员</p>
+<div><pre class="hljs"><code>    <span class="hljs-comment">//修改学员</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">updateStudent</span><span class="hljs-params">(ArrayList&lt;Student&gt; stuList, Scanner sc)</span> {
+        System.out.println(<span class="hljs-string">"请输入要修改的学员ID："</span>);
+        <span class="hljs-type">int</span> <span class="hljs-variable">stuId</span> <span class="hljs-operator">=</span> sc.nextInt();
+        <span class="hljs-comment">//查询</span>
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; stuList.size(); i++) {
+            <span class="hljs-type">Student</span> <span class="hljs-variable">stu</span> <span class="hljs-operator">=</span> stuList.get(i);
+            <span class="hljs-keyword">if</span> (stu.getId() == stuId) {
+                System.out.println(<span class="hljs-string">"【查询结果】要修改的学员信息："</span>);
+                <span class="hljs-comment">//打印</span>
+                Utils.printPerson(stu);
+                <span class="hljs-comment">//执行修改</span>
+                System.out.println(<span class="hljs-string">"请输入新姓名(保留原值输入0)："</span>);
+                <span class="hljs-type">String</span> <span class="hljs-variable">newName</span> <span class="hljs-operator">=</span> sc.next();
+                System.out.println(<span class="hljs-string">"请输入新性别(保留原值输入0)："</span>);
+                <span class="hljs-type">String</span> <span class="hljs-variable">newSex</span> <span class="hljs-operator">=</span> sc.next();
+                System.out.println(<span class="hljs-string">"请输入新出生日期(yyyy-MM-dd)(保留原值输入0)："</span>);
+                <span class="hljs-type">String</span> <span class="hljs-variable">newBirthday</span> <span class="hljs-operator">=</span> sc.next();
+
+                <span class="hljs-keyword">if</span> (!<span class="hljs-string">"0"</span>.equals(newName)) {
+                    stu.setName(newName);
+                }
+                <span class="hljs-keyword">if</span> (!<span class="hljs-string">"0"</span>.equals(newSex)) {
+                    stu.setSex(newSex);
+                }
+                <span class="hljs-keyword">if</span> (!<span class="hljs-string">"0"</span>.equals(newBirthday)) {
+                    stu.setBirthday(newBirthday);
+                }
+                System.out.println(<span class="hljs-string">"【成功】学员信息修改成功！"</span>);
+                <span class="hljs-keyword">return</span>;
+            }
+
+        }
+        System.out.println(<span class="hljs-string">"【错误】学员ID："</span> + stuId + <span class="hljs-string">" 没找到！"</span>);
+    }</code></pre></div>
+<p>4.10 学员管理系统_删除学员</p>
+<div><pre class="hljs"><code>    <span class="hljs-comment">//删除学员</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">deleteStudent</span><span class="hljs-params">(ArrayList&lt;Student&gt; stuList, Scanner sc)</span> {
+        System.out.println(<span class="hljs-string">"请输入要删除的学员ID："</span>);
+        <span class="hljs-type">int</span> <span class="hljs-variable">stuId</span> <span class="hljs-operator">=</span> sc.nextInt();
+        <span class="hljs-comment">//查询</span>
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; stuList.size(); i++) {
+            <span class="hljs-type">Student</span> <span class="hljs-variable">stu</span> <span class="hljs-operator">=</span> stuList.get(i);
+            <span class="hljs-keyword">if</span> (stu.getId() == stuId) {
+                System.out.println(<span class="hljs-string">"【查询结果】要删除的学员信息："</span>);
+                Utils.printPerson(stu);
+                System.out.println(<span class="hljs-string">"【确认】您确定要删除这条信息吗(y/n)？"</span>);
+                <span class="hljs-type">String</span> <span class="hljs-variable">str</span> <span class="hljs-operator">=</span> sc.next();
+                <span class="hljs-keyword">if</span> (<span class="hljs-string">"y"</span>.equals(str)) {
+                    stuList.remove(i);
+                    System.out.println(<span class="hljs-string">"【成功】数据已被删除！"</span>);
+                    <span class="hljs-keyword">return</span>;<span class="hljs-comment">//结束方法</span>
+                }<span class="hljs-keyword">else</span>{
+                    System.out.println(<span class="hljs-string">"【取消】操作被取消！"</span>);
+                    <span class="hljs-keyword">return</span>;
+                }
+
+            }
+
+        }
+        System.out.println(<span class="hljs-string">"【错误】学员ID："</span> + stuId + <span class="hljs-string">" 未找到！"</span>);
+    }</code></pre></div>
+</div>
+      </article>
+    </div>
+  </body>
+</html>
