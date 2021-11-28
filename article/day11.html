@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>day11-字符集，属性集，缓冲流，转换流，序列化流 - zblog</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zblog</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">day11-字符集，属性集，缓冲流，转换流，序列化流</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1618188905234"
+                  >2021-04-12 08:55</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1638092560025"
+                  >2021-11-28 17:42</time
+                ></span
+              >
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><nav class="table-of-contents"><ul><li><a href="#一-字符集两个类">一、字符集（两个类）</a><ul><li><a href="#字符流基于字节流-专门用于读写各种纯文本文件由于各国的语言的字符在计算机中所占的字节数不同">​字符流：基于字节流。专门用于读写各种“纯文本文件”——由于各国的语言的字符在计算机中所占的字节数不同。</a></li><li><a href="#字符流">字符流：</a><ul><li><a href="#输出流writer抽象类所有字符输出流的父类">输出流：Writer：（抽象类——所有字符输出流的父类）</a></li><li><a href="#输入流reader抽象类所有字符输入流的父类">输入流：Reader：（抽象类——所有字符输入流的父类）</a></li></ul></li><li><a href="#输入流">输入流：</a></li><li><a href="#filewriter的成员方法由父类writer定义五个写入的方法">FileWriter的成员方法：（由父类Writer定义，五个写入的方法）</a></li><li><a href="#输入流-1">输入流：</a><ul><li><a href="#1filereader的构造方法形式和字节输入流一样">1.FileReader的构造方法：形式和字节输入流一样</a></li><li><a href="#2filereader成员方法">2.FileReader成员方法：</a></li></ul></li></ul></li><li><a href="#二-属性集一个类">二、属性集（一个类）</a><ul><li><a href="#javautilproperties类它不是io流类-它本质上是一个map集合-它内部提供了两个方法可以结合io流很方便操作配置文件">.java.util.Properties(类)：它不是IO流类。它本质上是一个Map集合。它内部提供了两个方法，可以结合IO流很方便操作"配置文件"。</a></li><li><a href="#配置文件指记录软件运行期间的一些数据的纯文本文件">配置文件：指：记录软件运行期间的一些数据的纯文本文件。</a></li><li><a href="#properties的使用">Properties的使用：</a><ul><li><a href="#1创建对象-properties-pro-new-properties">1).创建对象： Properties pro = new Properties();</a></li><li><a href="#2成员方法">2).成员方法：</a></li></ul></li></ul></li><li><a href="#三-缓冲流两个类">三、缓冲流（两个类）</a><ul><li><a href="#1缓冲流就是内部自带了一个缓存区目的提高读写效率读-写都是先向缓存区之后再向硬盘">1).缓冲流：就是内部自带了一个"缓存区"，目的：提高读写效率——读、写都是先向"缓存区"，之后再向硬盘；</a></li><li><a href="#2字节缓冲流无特有方法">2).字节缓冲流：无特有方法。</a><ul><li><a href="#1输出流bufferedoutputstream">1).输出流：BufferedOutputStream</a></li><li><a href="#2输入流bufferedinputstream">​ 2).输入流：BufferedInputStream</a></li><li><a href="#3字符缓冲流">3).字符缓冲流：</a></li><li><a href="#4以上四个缓冲流的作用">4).以上四个缓冲流的作用： ​</a></li></ul></li></ul></li><li><a href="#四-转换流两个类">四、转换流（两个类）</a></li><li><a href="#五-序列化流两个类">五、序列化流（两个类）</a><ul><li><a href="#1什么是序列化指将一个内存中的对象连同类名-属性名-属性值一起存储到一个文件中或者通过网络传输">1).什么是"序列化"：指将一个内存中的对象，连同类名、属性名、属性值，一起存储到一个文件中，或者通过网络传输。</a></li><li><a href="#2什么是反序列化将之前序列化的对象再次的在内存中创建对象">2).什么是"反序列化"：将之前序列化的对象再次的在内存中创建对象。</a></li><li><a href="#3序列化的类objectoutputstream-注意">3).序列化的类：ObjectOutputStream 注意：</a></li><li><a href="#反序列化的类objectinptustream">反序列化的类：ObjectInptuStream</a></li></ul></li><li><a href="#二属性集properties读-写配置文件格式名值">二.属性集：Properties：读、写配置文件(格式：名=值)</a></li><li><a href="#三缓冲流">三.缓冲流：</a><ul><li><a href="#1字节缓冲流无新增方法">1).字节缓冲流：无新增方法。</a></li><li><a href="#2bufferedinputstream">2).BufferedInputStream</a></li><li><a href="#2字符缓冲流">2).字符缓冲流：</a></li></ul></li><li><a href="#四转换流">四.转换流：</a><ul><li><a href="#1构造时可以指定字符集">1).构造时，可以指定"字符集"</a></li><li><a href="#2构造时可以接受一个字节流可以将字节流转换为字符流工作">2).构造时，可以接受一个字节流——可以将字节流转换为字符流工作。</a></li></ul></li><li><a href="#五序列化流">五.序列化流：</a></li></ul></nav><h1 id="一-字符集两个类">一、字符集（两个类）</h1>
+<ol>
+<li>
+<h2 id="字符流基于字节流-专门用于读写各种纯文本文件由于各国的语言的字符在计算机中所占的字节数不同">​字符流：基于字节流。专门用于读写各种“纯文本文件”——由于各国的语言的字符在计算机中所占的字节数不同。</h2>
+</li>
+<li>
+<h2 id="字符流">字符流：</h2>
+<ol>
+<li>
+<h3 id="输出流writer抽象类所有字符输出流的父类">输出流：Writer：（抽象类——所有字符输出流的父类）</h3>
+<p>|—OutputStreamWriter(转换流)第四章讲</p>
+<p>​ |—FileWriter(子类)</p>
+</li>
+<li>
+<h3 id="输入流reader抽象类所有字符输入流的父类">输入流：Reader：（抽象类——所有字符输入流的父类）</h3>
+<p>|—InputStreamReader(转换流)第四章讲</p>
+<p>​ |—FIleReader（子类）</p>
+</li>
+</ol>
+</li>
+<li>
+<h2 id="输入流">输入流：</h2>
+<ol>
+<li>
+<p>FileWriter的构造方法：</p>
+<p>​ 注意：构造时，文件可以不存在，会自动创建</p>
+<p>​ 注意：构造时，不能构造在一个已有的目录上；</p>
+</li>
+</ol>
+</li>
+</ol>
+<blockquote>
+<p>1)FileWriter(String name);
+2)FileWriter(String name,boolean append):追加(填一个true)
+3)FileWriter(File file);
+4)FileWriter(File file,boolean append):追加（填一个true)</p>
+</blockquote>
+<ol start="4">
+<li>
+<h2 id="filewriter的成员方法由父类writer定义五个写入的方法">FileWriter的成员方法：（由父类Writer定义，五个写入的方法）</h2>
+<p>1).write(char c)：输出一个字符</p>
+<p>2).write(char[] chars):输出一个字符数组</p>
+<p>3).write(char[] chars,int offset,int len)：输出字符数组的一部分；</p>
+<p>4).write(String s)：输出一个字符串【常用】</p>
+<p>5).write(String s,int offset,int len)：输出一个字符串的一部分。</p>
+<p>刷新和关闭流：</p>
+<p>1).flush()：刷新缓存区——注意：字符流内部自带1024个长度的"字符数组"作为缓存区，当out.write()并不是像字节流直接写入到文件，而是写入到"缓存区"，我们必须要刷新缓存区，才能将缓存区中的数据写入到磁盘。</p>
+<p>2).close()：flush() + close()：先刷新，后关闭流。</p>
+</li>
+<li>
+<h2 id="输入流-2">输入流：</h2>
+</li>
+</ol>
+<h3 id="1filereader的构造方法形式和字节输入流一样">1.FileReader的构造方法：形式和字节输入流一样</h3>
+<div><pre class="hljs"><code>FileReader(String name):
+   FIleReader(File file):</code></pre></div>
+<h3 id="2filereader成员方法">2.FileReader成员方法：</h3>
+<p><code>1).int read()：读取一个字符，返回是：字符的编码值</code>
+<code>2).int read(char[] chars):读取一个字符数组，返回是：读取字符的个数</code>
+<code>int read():读取一个字符，返回是shi :字符的编码值 int read(char[] chars):读取一个字符数组，返回是：读取字符的个数</code></p>
+<hr />
+<h1 id="二-属性集一个类">二、属性集（一个类）</h1>
+<ol>
+<li>
+<h2 id="javautilproperties类它不是io流类-它本质上是一个map集合-它内部提供了两个方法可以结合io流很方便操作配置文件">.java.util.Properties(类)：它不是IO流类。它本质上是一个Map集合。它内部提供了两个方法，可以结合IO流很方便操作"配置文件"。</h2>
+</li>
+<li>
+<h2 id="配置文件指记录软件运行期间的一些数据的纯文本文件">配置文件：指：记录软件运行期间的一些数据的纯文本文件。</h2>
+</li>
+</ol>
+<p>世界上对这种配置文件有一种通用的格式： 文件名.properties</p>
+<div><pre class="hljs"><code> 名<span class="hljs-number">1</span> <span class="hljs-operator">=</span> 值
+        名<span class="hljs-number">2</span> <span class="hljs-operator">=</span> 值
+        名n <span class="hljs-operator">=</span> 值 </code></pre></div>
+<p>由于这种格式和Map集合非常类似，所以Java中单独制作了一个Map集合——Properties集合，结合IO流，就可以方便的操作这种文件。</p>
+<ol start="3">
+<li>
+<h2 id="properties的使用">Properties的使用：</h2>
+</li>
+</ol>
+<h3 id="1创建对象-properties-pro-new-properties">1).创建对象： Properties pro = new Properties();</h3>
+<h3 id="2成员方法">2).成员方法：</h3>
+<blockquote>
+<p>1).setProperty(String key,String value)：相当于：put()</p>
+<p>2).stringpertyNames()：相当于：keySet()</p>
+<p>3).getProperty(String key)：相当于：get()</p>
+<p>4).store(Writer/OutputStream out,String comm)：将键值对写入文件</p>
+<p>5).load(Reader/InputStream)：读取文件的键值对。</p>
+</blockquote>
+<hr />
+<h1 id="三-缓冲流两个类">三、缓冲流（两个类）</h1>
+<p>​</p>
+<h2 id="1缓冲流就是内部自带了一个缓存区目的提高读写效率读-写都是先向缓存区之后再向硬盘">1).缓冲流：就是内部自带了一个"缓存区"，目的：提高读写效率——读、写都是先向"缓存区"，之后再向硬盘；</h2>
+<h2 id="2字节缓冲流无特有方法">2).字节缓冲流：无特有方法。</h2>
+<h3 id="1输出流bufferedoutputstream">1).输出流：BufferedOutputStream</h3>
+<p>​ 构造方法：</p>
+<blockquote>
+<p>​ 1）BufferedOutputStream(OutpputStream out)：创建一个新的缓存输出流，以将数据写入指定的底层输出流</p>
+<p>​ 2）BufferedOutputSritem(OutputStream out,int size);创建一个新的缓存输出流，以便以指定的缓存区大小将数据写入指定的底层输出流</p>
+</blockquote>
+<h3 id="2输入流bufferedinputstream">​ 2).输入流：BufferedInputStream</h3>
+<p>​ 构造方法：</p>
+<blockquote>
+<p>​ 1）BufferedInputStream(InputStream in)创建一个缓存输入流并保存其参数，输入流 in ，供以后使用。</p>
+<p>​ 2）BufferedInputStream(InputStream in ,int size)：创建缓存输出流具有指定缓冲区大小，并保存其参数，输入流in，供以后使用。</p>
+</blockquote>
+<h3 id="3字符缓冲流">3).字符缓冲流：</h3>
+<p>​ 1).输出流：BufferedWriter</p>
+<p>​ 特有方法</p>
+<blockquote>
+<p>​ 1).void newLine()：输出一个与当前操作系统匹配的"换行符"；</p>
+<p>​ 2).输入流：BufferedReader</p>
+</blockquote>
+<p>​ 特有方法</p>
+<p><code>​ 1).String readLine()：读取一行信息；不读取换行符。 ​</code></p>
+<h3 id="4以上四个缓冲流的作用">4).以上四个缓冲流的作用： ​</h3>
+<p>1).内部提供了缓存区，它们的read()和write()都不是针对磁盘，而是针对"缓存区"，效率很高；</p>
+<hr />
+<h1 id="四-转换流两个类">四、转换流（两个类）</h1>
+<div><pre class="hljs"><code><span class="hljs-number">1</span>).输出流：OutputStreamWriter:
+<span class="hljs-number">2</span>).输入流：InputStreamReader:
+<span class="hljs-number">3</span>).它们的作用：
+    <span class="hljs-number">1</span>).编码：将文字转换为字节——将看得懂的变为看不懂的。
+    <span class="hljs-number">2</span>).解码：将字节转换为文字——将看不懂的变为看得懂的。
+    <span class="hljs-number">3</span>).编码和解码都要使用——字符集(编码表)
+        <span class="hljs-number">1</span>).ASCII码表：<span class="hljs-number">128</span>个字符，没有中文！！！
+        <span class="hljs-number">2</span>).GBK码表：全中文码表，里面也兼容ASCII，每个中文占：<span class="hljs-number">2</span>个字节
+        <span class="hljs-number">3</span>).Unicode码表：是一个国际码表，包含了大多数国家的一些常用文字，包括中文。
+                        Java就是支持Unicode码表。一个字符占：<span class="hljs-number">2</span>个字节
+        <span class="hljs-number">4</span>).UTF-<span class="hljs-number">8</span>码表：是一个国际码表，包含了大多数国家的一些大多数的文字，包括中文。
+                        一个字符可能是占<span class="hljs-number">1</span>个字节，<span class="hljs-number">2</span>个字节，<span class="hljs-number">3</span>个字节，<span class="hljs-number">4</span>个字节...
+                        一个中文占：<span class="hljs-number">3</span>个字节
+                        IDEA默认就是使用UTF-<span class="hljs-number">8</span>码表。
+        <span class="hljs-number">5</span>).ISO-<span class="hljs-number">8859</span>-<span class="hljs-number">1</span>码表：没有中文！！！
+        
+        乱码产生的原因：编码和解码使用的字符集不一样。
+        
+    <span class="hljs-number">4</span>).转换流的作用：之前我们学习的FileWriter和FileReader只能使用UTF-<span class="hljs-number">8</span>编码和解码。如果现有一个GBK编码的文件，使用FileReader读取就会出现乱码。如果我们想用GBK编码输出，也做不到。这时，就可以使用转换流——可以指定字符集来读、写文件。
+        <span class="hljs-number">1</span>).指定字符集。通过构造方法
+        <span class="hljs-number">2</span>).将字节流转换为字符流工作。通过构造方法
+
+<span class="hljs-number">4</span>).输出流：OutputStreamWriter
+    <span class="hljs-number">1</span>).构造方法：
+        OutputStreamWriter(OutputStream out,String charsetName)
+    <span class="hljs-number">2</span>).无特有方法，使用从父类继承的<span class="hljs-number">5</span>个输出的方法：
+        ......
+<span class="hljs-number">5</span>).输入流：InputStreamReader
+    <span class="hljs-number">1</span>).构造方法：
+        InputStreamReader(InputStream in,String charsetName)
+    <span class="hljs-number">2</span>).无特有方法，使用从父类继承的<span class="hljs-number">2</span>个读取的方法：</code></pre></div>
+<h1 id="五-序列化流两个类">五、序列化流（两个类）</h1>
+<h2 id="1什么是序列化指将一个内存中的对象连同类名-属性名-属性值一起存储到一个文件中或者通过网络传输">1).什么是"序列化"：指将一个内存中的对象，连同类名、属性名、属性值，一起存储到一个文件中，或者通过网络传输。</h2>
+<h2 id="2什么是反序列化将之前序列化的对象再次的在内存中创建对象">2).什么是"反序列化"：将之前序列化的对象再次的在内存中创建对象。</h2>
+<h2 id="3序列化的类objectoutputstream-注意">3).序列化的类：ObjectOutputStream 注意：</h2>
+<blockquote>
+<ul>
+<li>被序列化的类必须要实现：java.io.Serializable接口；此接口没有任何抽象方法，这种接口叫：标记接口。</li>
+<li>建议自己维护"序列号": private static final long serialVersionUID = 1;</li>
+<li>如果某个属性不希望被序列化： private transient int age;//此属性的值不会被序列化到文件</li>
+<li>不建议在一个文件中序列化多个对象。如果想序列化多个对象——将多个对象存储到一个集合中，然后序列化一个集合。 但是，要求：集合，以及集合内的元素，以及集合内元素的所有父类必须要实现Serializable接口。</li>
+</ul>
+</blockquote>
+<h2 id="反序列化的类objectinptustream">反序列化的类：ObjectInptuStream</h2>
+<hr />
+<p>总结</p>
+<p>一.字符流的基本流：</p>
+<blockquote>
+<p>1).FileWriter</p>
+<p>2).FileReader 这两个流基本不用——只能使用默认字符集(编码表)，给它流构造使用的。</p>
+</blockquote>
+<hr />
+<h1 id="二属性集properties读-写配置文件格式名值">二.属性集：Properties：读、写配置文件(格式：名=值)</h1>
+<hr />
+<h1 id="三缓冲流">三.缓冲流：</h1>
+<h2 id="1字节缓冲流无新增方法">1).字节缓冲流：无新增方法。</h2>
+<blockquote>
+<p>1).BufferedOutputStream</p>
+<h2 id="2bufferedinputstream">2).BufferedInputStream</h2>
+</blockquote>
+<h2 id="2字符缓冲流">2).字符缓冲流：</h2>
+<blockquote>
+<p>1).BufferedWriter 新方法：newLine()：读取一行</p>
+<p>2).BufferedReader 新方法：readLine()：读取一行</p>
+</blockquote>
+<hr />
+<h1 id="四转换流">四.转换流：</h1>
+<blockquote>
+<p>1).输出流：OutputStreamWriter</p>
+<p>2).输入流：InputStreamReader 功能：</p>
+</blockquote>
+<h2 id="1构造时可以指定字符集"><code>1).构造时，可以指定"字符集"</code></h2>
+<h2 id="2构造时可以接受一个字节流可以将字节流转换为字符流工作"><code>2).构造时，可以接受一个字节流——可以将字节流转换为字符流工作。</code></h2>
+<hr />
+<h1 id="五序列化流">五.序列化流：</h1>
+<blockquote>
+<p>1).序列化：ObjectOutputStream——writeObject(Object )</p>
+<p>2).反序列化：ObjectInputStream——readObject()</p>
+</blockquote>
+<p>Java中以InputStream或OutputStream结尾的类基本上是字节类，以Reader或Writer结尾的类是字符类</p>
+</div>
+      </article>
+    </div>
+  </body>
+</html>

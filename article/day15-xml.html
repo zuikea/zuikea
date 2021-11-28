@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>day15-XML - zblog</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zblog</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">day15-XML</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1618622615264"
+                  >2021-04-17 09:23</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1638092576248"
+                  >2021-11-28 17:42</time
+                ></span
+              >
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><nav class="table-of-contents"><ul><li><a href="#一-xml">一、XML</a><ul><li><a href="#什么是xml">什么是XML</a></li><li><a href="#xml的作用">XML的作用</a></li><li><a href="#xml的语法">XML的语法</a></li></ul></li><li><a href="#二-dom4j">二、DOM4J</a><ul><li><a href="#1三种常见的解析方式">1).三种常见的解析方式：</a><ul><li><a href="#1dom解析">1).DOM解析：</a></li><li><a href="#2sax解析">2).SAX解析：</a></li><li><a href="#3pull解析">3).PULL解析：</a></li></ul></li><li><a href="#2常见的解析工具包">2).常见的解析工具包：</a><ul><li><a href="#1jaxp">1).JAXP：</a></li><li><a href="#2dom4j">2).Dom4j：</a></li><li><a href="#3jdom">3).JDOM：</a></li><li><a href="#4jsoup">4).Jsoup：</a></li></ul></li><li><a href="#3dom4j的使用">3).dom4j的使用：</a><ul><li><a href="#1将所需jar包复制到lib目录下并添加到类库">1).将所需jar包复制到lib目录下，并添加到类库。</a></li><li><a href="#2可以使用了">2).可以使用了：</a></li></ul></li><li><a href="#element一些常用方法">Element一些常用方法：</a></li><li><a href="#4dom4j-xpath">4).dom4j + XPath：</a><ul><li><a href="#1xpath是一个第三方的工具包作用使用类似于windows的路径的方式在一个xml文件中查找某个某些标签">1).XPath是一个第三方的工具包，作用：使用类似于windows的路径的方式，在一个xml文件中查找某个/某些标签。</a></li><li><a href="#2xpath的使用">2).XPath的使用：</a></li></ul></li></ul></li><li><a href="#三-lombok">三、Lombok：</a><ul><li><a href="#1什么是lombok">1).什么是Lombok：</a></li><li><a href="#说明">说明：</a><ul><li><a href="#1getter和setter">1).@Getter和@Setter</a></li><li><a href="#2tostring">2).@ToString：</a></li><li><a href="#3noargsconstructor无参数构造方法">3).@NoArgsConstructor无参数构造方法。</a></li><li><a href="#allargsconstructor满参数构造方法">@AllArgsConstructor满参数构造方法。</a></li><li><a href="#4equalsandhashcode">4).@EqualsAndHashCode</a></li><li><a href="#5data">5).@Data</a></li></ul></li></ul></li></ul></nav><p>day15XML</p>
+<h1 id="一-xml">一、XML</h1>
+<ol>
+<li>
+<h2 id="什么是xml">什么是XML</h2>
+</li>
+<li>
+<h2 id="xml的作用">XML的作用</h2>
+</li>
+<li>
+<h2 id="xml的语法">XML的语法</h2>
+<ol>
+<li>
+<p>文件的后缀</p>
+</li>
+<li>
+<p>文档注释</p>
+</li>
+<li>
+<p>注释：</p>
+</li>
+<li>
+<p>标签</p>
+</li>
+<li>
+<p>测</p>
+</li>
+<li>
+<p>转义字符</p>
+</li>
+<li>
+<p>CDATA区</p>
+<ol>
+<li>
+<p>如果一个标签中的数据中包含了大量的需要转义的字符，编写会非常麻烦，而且可读性也差。</p>
+</li>
+<li>
+<p>可以使用CDATA区：</p>
+<div><pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">code</span>&gt;</span>
+    &lt;![CDATA[
+        ......
+    ]]&gt;
+<span class="hljs-tag">&lt;/<span class="hljs-name">code</span>&gt;</span></code></pre></div>
+</li>
+</ol>
+</li>
+<li>
+<p>XML的约束</p>
+<ol>
+<li>
+<p>DTD约束：比较简单，适用于中小型的，对数据类型要求不是很高的XML文件的约束</p>
+</li>
+<li>
+<p>Schema约束：比较复杂，适用于大型的，对数据类型要求很高的XML文件的约束。</p>
+<p>以上两种约束可以对XML文件约束：</p>
+<ol>
+<li>
+<p>可以出现哪些标签。</p>
+</li>
+<li>
+<p>这些标签的包含关系、先后顺序。</p>
+</li>
+<li>
+<p>这些标签的出现的数量</p>
+</li>
+<li>
+<p>这些标签可以包含什么(子标签/数据)</p>
+</li>
+<li>
+<p>这些标签可以有什么属性</p>
+<p>……</p>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+<h1 id="二-dom4j">二、DOM4J</h1>
+<h2 id="1三种常见的解析方式">1).三种常见的解析方式：</h2>
+<h3 id="1dom解析">1).DOM解析：</h3>
+<p>将xml文档的内容一次性的读取到内存中，并且使用对象存储，而且对象中会保留xml文件的文档结构。</p>
+<p>优点：保留了XML文件的结构，可以在内存中增、删元素。</p>
+<p>缺点：占内存。</p>
+<h3 id="2sax解析">2).SAX解析：</h3>
+<p>逐行解析xml文档，本身不保留文档结构。</p>
+<p>优点：快、不占内存。</p>
+<p>缺点：不保留xml文件的结构，不能增删元素。</p>
+<h3 id="3pull解析">3).PULL解析：</h3>
+<p>Android内置的XML解析方式，类似SAX。</p>
+<h2 id="2常见的解析工具包">2).常见的解析工具包：</h2>
+<h3 id="1jaxp">1).JAXP：</h3>
+<p>sun公司提供一个很底层解析xml的方式，操作比较复杂。</p>
+<h3 id="2dom4j">2).Dom4j：</h3>
+<p>是Apache公司的、开源的、免费的解析xml的工具包。目前世界主流的xml解析工具包。【我们学习】</p>
+<p>它内部是支持DOM + SAX的解析方式。</p>
+<h3 id="3jdom">3).JDOM：</h3>
+<p>目前已经不怎么使用了。</p>
+<h3 id="4jsoup">4).Jsoup：</h3>
+<p>功能强大DOM方式的XML解析开发包，尤其对HTML解析更加方便(项目中讲解)</p>
+<h2 id="3dom4j的使用">3).dom4j的使用：</h2>
+<h3 id="1将所需jar包复制到lib目录下并添加到类库">1).将所需jar包复制到lib目录下，并添加到类库。</h3>
+<h3 id="2可以使用了">2).可以使用了：</h3>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String\[\] args)</span> <span class="hljs-keyword">throws</span> DocumentException {
+
+[<span class="hljs-comment">//1.创建一个SAXReader对象](//1.xn--SAXReader-u75nooq40btk6aj1iww5o)</span>
+
+<span class="hljs-type">SAXReader</span> <span class="hljs-variable">reader</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">SAXReader</span>();
+
+[<span class="hljs-comment">//2.读取XML文件](//2.xn--XML-wu9du6trw3axv3d)，生成dom对象</span>
+
+<span class="hljs-type">Document</span> <span class="hljs-variable">dom</span> <span class="hljs-operator">=</span> reader.read(“book.xml”);
+
+[<span class="hljs-comment">//3.获取根元素](//3.xn--z4qp6dm12auwt5qh)</span>
+
+<span class="hljs-type">Element</span> <span class="hljs-variable">root</span> <span class="hljs-operator">=</span> dom.getRootElement();
+
+<span class="hljs-comment">//剩下就是操作：Element对象了</span>
+
+[<span class="hljs-comment">//1.获取标签名](//1.xn--torwe325drlswmj)：getName()</span>
+
+<span class="hljs-type">String</span> <span class="hljs-variable">tagName</span> <span class="hljs-operator">=</span> root.getName();
+
+System.out.println(“标签名：” + tagName);<span class="hljs-comment">//books</span>
+
+[<span class="hljs-comment">//2.获取一些子元素](//2.xn--4gqqo41eivdr0n674ciwj)：elements(\[“子标签名”\])</span>
+
+List&amp;lt;Element&amp;gt; list = root.elements(“book”);
+
+<span class="hljs-keyword">for</span> (Element element : list) {
+
+System.out.println(<span class="hljs-string">"\\t"</span> + element.getName());<span class="hljs-comment">//book</span>
+
+<span class="hljs-type">String</span> <span class="hljs-variable">name</span> <span class="hljs-operator">=</span> element.elementText(“name”);
+
+<span class="hljs-type">String</span> <span class="hljs-variable">price</span> <span class="hljs-operator">=</span> element.elementText(“price”);
+
+<span class="hljs-type">String</span> <span class="hljs-variable">author</span> <span class="hljs-operator">=</span> element.elementText(“author”);
+
+System.out.println(<span class="hljs-string">"\\t\\t书名："</span> + name);
+
+System.out.println(<span class="hljs-string">"\\t\\t价格："</span> + price);
+
+System.out.println(<span class="hljs-string">"\\t\\t作者："</span> + author);
+
+}
+
+}</code></pre></div>
+<p>==============================================================================</p>
+<h2 id="element一些常用方法">Element一些常用方法：</h2>
+<blockquote>
+<p>1).public List elements()：获取当前元素对象的所有子元素对象。</p>
+<p>2).public List elements(String tagName)：获取当前元素对象下的，指定名字的所有子元素对象。</p>
+<p>3).public String getName()：获取当前元素对象的标签名；</p>
+<p>4).public String elementText(String tagName)：获取当前元素下的，tagName子元素的数据。</p>
+</blockquote>
+<h2 id="4dom4j-xpath">4).dom4j + XPath：</h2>
+<h3 id="1xpath是一个第三方的工具包作用使用类似于windows的路径的方式在一个xml文件中查找某个某些标签">1).XPath是一个第三方的工具包，作用：使用类似于windows的路径的方式，在一个xml文件中查找某个/某些标签。</h3>
+<h3 id="2xpath的使用">2).XPath的使用：</h3>
+<p>1).将XPath所需jar包复制到当前lib目录下，并添加到类库</p>
+<p>2).使用步骤：</p>
+<div><pre class="hljs"><code>[//1.创建一个SAXReader对象](//1.xn--SAXReader-u75nooq40btk6aj1iww5o)
+
+SAXReader reader = new SAXReader();
+
+[//2.读取xml](//2.xn--xml-gx3eq08w)，生成dom对象
+
+Document dom = reader.read(“book.xml”);
+
+[//3.调用方法](//3.xn--nfv31nvohxuy) \+ XPath路径，获取某个/某些标签
+
+//Element ele = dom.selectSingleNode(“XPath路径”);
+
+//List<span class="hljs-symbol">&amp;lt;</span>Element<span class="hljs-symbol">&amp;gt;</span> list = dom.selectNodes(“XPath路径”);</code></pre></div>
+<h1 id="三-lombok">三、Lombok：</h1>
+<h2 id="1什么是lombok">1).什么是Lombok：</h2>
+<p>它是一个第三方的工具包。作用可以为我们的类， 编译时添加无参、全参构造，以及get/set方法，toString，equals…</p>
+<p>我们的类只需要定义属性，其它全部通过Lombok的注解，编译后生成。</p>
+<div><pre class="hljs"><code><span class="hljs-meta">@NoArgsConstructor</span>
+
+<span class="hljs-meta">@AllArgsConstructor</span>
+
+<span class="hljs-meta">@Data</span>
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Student</span> {
+
+    <span class="hljs-keyword">private</span> String name;
+
+    <span class="hljs-keyword">private</span> <span class="hljs-type">int</span> age;
+
+}</code></pre></div>
+<h2 id="说明">说明：</h2>
+<h3 id="1getter和setter">1).@Getter和@Setter</h3>
+<p>作用：生成成员变量的get和set方法。</p>
+<p>写在成员变量上，只对当前成员变量有效。</p>
+<p>写在类上，对所有成员变量有效。</p>
+<p>注意：静态成员变量无效。</p>
+<h3 id="2tostring">2).@ToString：</h3>
+<p>作用：生成toString()方法。</p>
+<p>该注解只能写在类上。</p>
+<h3 id="3noargsconstructor无参数构造方法">3).@NoArgsConstructor无参数构造方法。</h3>
+<h3 id="allargsconstructor满参数构造方法">@AllArgsConstructor满参数构造方法。</h3>
+<h3 id="4equalsandhashcode">4).@EqualsAndHashCode</h3>
+<p>作用：生成hashCode()和equals()方法。</p>
+<p>该注解只能写在类上。</p>
+<h3 id="5data">5).@Data</h3>
+<p>作用： 生成setter/getter、equals、canEqual、hashCode、toString方法，如为final属</p>
+<p>性，则不会为该属性生成setter方法。</p>
+<p>该注解只能写在类上。</p>
+</div>
+      </article>
+    </div>
+  </body>
+</html>

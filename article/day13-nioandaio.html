@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>day13-NIO&amp;AIO - zblog</title>
+  </head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zblog</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">day13-NIO&amp;AIO</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1618447616435"
+                  >2021-04-15 08:46</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1638092569704"
+                  >2021-11-28 17:42</time
+                ></span
+              >
+            </div>
+            
+            <div>
+              Keywords: 
+              <span class="keyword">无数据</span>
+              
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><h1 id="一-bio-nio-aio">一、BIO、NIO、AIO</h1>
+<ul>
+<li>1).BIO：  最早的IO，也是我们之前学过的，全称：Block IO——阻塞的IO，体现在网络编程的服务器端：- server.accept()。</li>
+<li>2).NIO：  从JDK1.4开始，提出了NIO，全称：None <code>Block IO——非阻塞的IO，实现了accept()的非阻塞，同步处理——轮询。</code></li>
+<li>3).AIO： 从JDK1.7开始，提出了AIO，全称：Asynchronous <code>IO——异步的IO，accept()方法也是非阻塞的，异步处理——回调函数。</code></li>
+</ul>
+<h2 id="二-nio">二、NIO：</h2>
+<p><em><strong>待做</strong></em></p>
+<h2 id="三-aio">三、AIO：</h2>
+<ul>
+<li>1).AIO：全称：AsynchronousIO——异步的、非阻塞的IO，从JDK7开始，主要用于：网络的服务器端；</li>
+<li>2).它可以实现"同步、非阻塞"，“异步、非阻塞”</li>
+<li>3).两个类：
+<ul>
+<li>1).服务器端：AsynchronousServerSocketChannel</li>
+<li>2).客户端：AsynchronousSocketChannel</li>
+</ul>
+</li>
+<li>4).同步非阻塞演示：</li>
+<li>5).异步非阻塞演示：</li>
+</ul>
+</div>
+      </article>
+    </div>
+  </body>
+</html>

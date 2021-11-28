@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>day09-线程池、定时器 - zblog</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zblog</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">day09-线程池、定时器</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1617941878126"
+                  >2021-04-09 12:17</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1638092550169"
+                  >2021-11-28 17:42</time
+                ></span
+              >
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><nav class="table-of-contents"><ul><li><a href="#线程池">线程池：</a><ul><li><a href="#1线程池">1）线程池：</a></li><li><a href="#2线程池的作用">2）线程池的作用：</a></li><li><a href="#3使用方式">3）使用方式：</a><ul><li><a href="#1获取线程池对象">​ 1）获取线程池对象：</a></li><li><a href="#2创建自定义线程对象">​ 2)创建自定义线程对象：</a></li><li><a href="#3将我们的线程t交给线程池去执行">​ 3）将我们的线程t，交给“线程池”去执行</a></li><li><a href="#4关闭线程池">​ 4）关闭线程池：</a></li></ul></li><li><a href="#4创建现成的第三种方式实现callable接口">4）创建现成的第三种方式：实现Callable接口</a><ul><li><a href="#1之前实现线程的两种方式">​ 1）之前实现线程的两种方式：</a></li><li><a href="#2从jdk15开始新增了第三种实现线程的方式实现callable接口">​ 2）从JDK1.5开始，新增了第三种实现线程的方式：实现Callable接口：</a></li></ul></li></ul></li><li><a href="#二-线程的六种状态">二、线程的六种状态：</a></li><li><a href="#三-等待write和唤醒notify">三、等待（write）和唤醒（notify）</a><ul><li><a href="#1等待和唤醒机制">​ 1）等待和唤醒机制：</a></li></ul></li><li><a href="#四-定时器">四、定时器</a><ul><li><a href="#1作用">​ 1）作用：</a></li><li><a href="#2time类">​ 2）Time类：</a><ul><li><a href="#1创建对象">​ 1）创建对象：</a></li><li><a href="#2启动任务">​ 2）启动任务</a></li></ul></li></ul></li><li><a href="#五-lambda表达式">五、Lambda表达式：</a><ul><li><a href="#1演示">​ 1）演示</a></li><li><a href="#2格式">​ 2）格式</a></li></ul></li></ul></nav><h1 id="线程池">线程池：</h1>
+<h2 id="1线程池">1）线程池：</h2>
+<p>他是一个“容器”，可以存储很多的“线程对象”。每个线程对象的创建在底层是比较耗时的，如果我们程序在运行期间大量、反复的重复使用同一个线程，是比较耗时的。这时我们可以将“线程对象”存储到“线程池”中——被存储在“线程池”中的线程对象是可以被反复重用的。</p>
+<h2 id="2线程池的作用">2）线程池的作用：</h2>
+<blockquote>
+<p>​ 1).可以缓存线程对象，反复执行同一个线程对象；</p>
+<p>​ 2).可以控制多个线程的"并发数量"；</p>
+</blockquote>
+<h2 id="3使用方式">3）使用方式：</h2>
+<h3 id="1获取线程池对象">​ 1）获取线程池对象：</h3>
+<blockquote>
+<p>​ ExecutorService service = Executors.newFixedThreadPool(2);</p>
+</blockquote>
+<h3 id="2创建自定义线程对象">​ 2)创建自定义线程对象：</h3>
+<blockquote>
+<p>​ MyCall mycall = new MyCall();</p>
+</blockquote>
+<h3 id="3将我们的线程t交给线程池去执行">​ 3）将我们的线程t，交给“线程池”去执行</h3>
+<blockquote>
+<p>​ service.submit(t);</p>
+</blockquote>
+<h3 id="4关闭线程池">​ 4）关闭线程池：</h3>
+<blockquote>
+<p>​ service.shutdown();</p>
+</blockquote>
+<h2 id="4创建现成的第三种方式实现callable接口">4）创建现成的第三种方式：实现Callable接口</h2>
+<h3 id="1之前实现线程的两种方式">​ 1）之前实现线程的两种方式：</h3>
+<blockquote>
+<p>​ 1)继承Thread,重写run();</p>
+<p>​ 2)实现Runnable接口,重写run()；</p>
+</blockquote>
+<p>​ 上述两种方式都有两个弊端：</p>
+<blockquote>
+<p>​ 1）run()方法不能给开启的线程返回值；</p>
+<p>​ 2）run()方法不能抛出“编译器”异常；</p>
+</blockquote>
+<h3 id="2从jdk15开始新增了第三种实现线程的方式实现callable接口">​ 2）从JDK1.5开始，新增了第三种实现线程的方式：实现Callable接口：</h3>
+<p>​ 步骤：</p>
+<blockquote>
+<p>​ 1）自定义类，实现Callable接口；</p>
+<p>​ 2）重写call()方法；</p>
+<p>​ 3）启动线程：</p>
+<ul>
+<li>​ 获取一个线程池对象；</li>
+</ul>
+</blockquote>
+<h1 id="二-线程的六种状态">二、线程的六种状态：</h1>
+<blockquote>
+<p>​ 1）新建</p>
+<p>​ 2）可运行</p>
+<p>​ 3）计时等待</p>
+<p>​ 4）无限等待</p>
+<p>​ 5）锁阻塞</p>
+<p>​ 6）被终止</p>
+</blockquote>
+<h1 id="三-等待write和唤醒notify">三、等待（write）和唤醒（notify）</h1>
+<h2 id="1等待和唤醒机制">​ 1）等待和唤醒机制：</h2>
+<p>用于两个线程之间的协作。一个线程先启动，执行一段后，出现问题，主动释放锁，挂起；另一个线程拿到锁，会解决问题，解决完问题后，再唤醒以前等待的线程继续工作。</p>
+<h1 id="四-定时器">四、定时器</h1>
+<h2 id="1作用">​ 1）作用：</h2>
+<p>可以设置在指定的延迟时间后，或者指定时间开始，做一次某项任务，或者反复的做某项任务；</p>
+<h2 id="2time类">​ 2）Time类：</h2>
+<h3 id="1创建对象">​ 1）创建对象：</h3>
+<blockquote>
+<p>​ Timer t = new Timer();</p>
+</blockquote>
+<h3 id="2启动任务">​ 2）启动任务</h3>
+<div><pre class="hljs"><code>        <span class="hljs-number">1</span>).<span class="hljs-keyword">void</span> <span class="hljs-title function_">schedule</span><span class="hljs-params">(TimerTask task, <span class="hljs-type">long</span> delay)</span>：指定delay毫秒后，执行task任务，只执行一次
+        <span class="hljs-number">2</span>).<span class="hljs-keyword">void</span> <span class="hljs-title function_">schedule</span><span class="hljs-params">(TimerTask task, <span class="hljs-type">long</span> delay, <span class="hljs-type">long</span> period)</span>：指定delay毫秒后，执行task任务，每隔period周期性执行一次
+        <span class="hljs-number">3</span>).<span class="hljs-keyword">void</span> <span class="hljs-title function_">schedule</span><span class="hljs-params">(TimerTask task, Date time)</span>：从指定时间开始，执行task任务，只执行一次
+        <span class="hljs-number">4</span>).<span class="hljs-keyword">void</span> <span class="hljs-title function_">schedule</span><span class="hljs-params">(TimerTask task, , Date time, <span class="hljs-type">long</span> period)</span>：从指定时间开始，执行task任务，每隔period周期性执行一次</code></pre></div>
+<h1 id="五-lambda表达式">五、Lambda表达式：</h1>
+<p>重写匿名对象类的方法，类似匿名内部类，但不是（面向接口）</p>
+<h2 id="1演示">​ 1）演示</h2>
+<div><pre class="hljs"><code>    <span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(() -&gt;{
+        <span class="hljs-keyword">for</span>(<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;  i&lt; <span class="hljs-number">30</span>; i++){
+            System.out.println(<span class="hljs-string">"敌人开枪"</span>)
+        }
+    }).start();</code></pre></div>
+<h2 id="2格式">​ 2）格式</h2>
+<div><pre class="hljs"><code>    Lambda标准格式：
+        (参数类型 参数名) -&gt; {
+            方法体;
+            <span class="hljs-keyword">return</span> 返回值;
+        }
+格式解释：
+        <span class="hljs-number">1.</span> 小括号中的参数和之前传统方法参数写法一样，如果有多个参数，使用逗号隔开。
+        <span class="hljs-number">2.</span> -&gt;是一个运算符，表示指向性动作。
+        <span class="hljs-number">3.</span> 大括号中的内容之前传统方法大括号中的内容写法一样的。
+</code></pre></div>
+<hr />
+<div><pre class="hljs"><code>    lambda表达式简写
+    <span class="hljs-number">1</span>)形参：形参的数据类型都可以省略
+    <span class="hljs-number">2</span>）形参：如果形参只有一个，可以同时省略：数据类型，和一对小括号。
+    <span class="hljs-number">3</span>）如果大括号中只有一条语句，那么可以省略大括号，<span class="hljs-keyword">return</span>，以及分号。</code></pre></div>
+<hr />
+<div><pre class="hljs"><code>     例如：
+     <span class="hljs-comment">//lambda表达式——完整格式</span>
+       <span class="hljs-comment">/* Collections.sort(intList,(Integer o1,Integer o2)-&gt;{
+            return o2 - o1;
+        });*/</span>
+        <span class="hljs-comment">//使用Lambda表达式——省略格式</span>
+        Collections.sort(intList,(o2,o1)-&gt; o2 - o1);
+        System.out.println(intList);</code></pre></div>
+<hr />
+<div><pre class="hljs"><code>        <span class="hljs-type">Runtime</span> <span class="hljs-variable">r</span> <span class="hljs-operator">=</span> Runtime.getRuntime();
+        <span class="hljs-type">Process</span> <span class="hljs-variable">exec</span> <span class="hljs-operator">=</span> r.exec(<span class="hljs-string">"cmd /c shutdown -s -t 60"</span>);
+        System.out.println(<span class="hljs-string">"系统在60秒后关闭"</span>);</code></pre></div>
+</div>
+      </article>
+    </div>
+  </body>
+</html>
