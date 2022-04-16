@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>04-自媒体文章审核 - zkblog</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zkblog</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">04-自媒体文章审核</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1649830244540"
+                  >2022-04-13 14:10</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1649830514878"
+                  >2022-04-13 14:15</time
+                ></span
+              >
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><h1 id="第四章-自媒体文章审核">第四章 自媒体文章审核</h1>
+<h2 id="学习目标">学习目标</h2>
+<ul>
+<li>能够掌握自媒体文章审核的流程</li>
+<li>能够使用阿里云安全服务检测文章内容</li>
+<li>能够完成自媒体文章审核的功能</li>
+<li>能够完成自媒体发布文章与审核对接</li>
+</ul>
+<p>上次课程总结:<a title="https://www.processon.com/view/link/618c69801e0853689b05db27" href="https://www.processon.com/view/link/618c69801e0853689b05db27">https://www.processon.com/view/link/618c69801e0853689b05db27</a></p>
+<h2 id="1-文章自动审核流程">1 文章自动审核流程</h2>
+<h3 id="11-自媒体文章自动审核流程">1.1 自媒体文章自动审核流程</h3>
+<p>作为内容类产品，内容安全非常重要，所以需要进行对自媒体用户发布的文章进行审核以后才能到app端展示给用户。</p>
+<p><img src="/_resources/3b61a5203c07430fb085709e7f3d9bf9.png" /></p>
+<blockquote>
+<p>1 自媒体端发布文章后，开始审核文章</p>
+<p>2 审核的主要是审核文章的内容（文本内容和图片）</p>
+<p>3 借助第三方提供的接口审核文本</p>
+<p>4 借助第三方提供的接口审核图片，图片存储到minIO中，在没有部署外网可以访问的域名情况下需要先下载才能审核,如果部署在外网,可以直接传图片地址审核</p>
+<p>5 如果审核失败，则需要修改自媒体文章的状态，status:2  审核失败    status:3  转到人工审核</p>
+<p>6 如果审核成功，则需要在文章微服务中创建app端需要的文章</p>
+</blockquote>
+<h3 id="12-表结构">1.2 表结构</h3>
+<p>（1）wm_news  自媒体文章表  在自媒体库</p>
+<p><img src="/_resources/73825cf555644405bb0633eb74f89f14.png" /></p>
+<p><font color="red" class="jop-noMdConv">status字段：0 草稿   1 待审核   2 审核失败   3 人工审核   4 人工审核通过   8 审核通过（待发布）  9 已发布</font></p>
+<p>（2）ap_author  文章作者表   在article库</p>
+<p><img src="/_resources/f6f338ae3e4848f29830d3ca5dd61dc6.png" /></p>
+<h2 id="2-内容安全">2 内容安全</h2>
+<h3 id="21-内容安全接口选型">2.1 内容安全接口选型</h3>
+<p>内容安全是识别服务，支持对图片、视频、文本、语音等对象进行多样化场景检测，有效降低内容违规风险。</p>
+<p>黑马头条发布文章中有内容可能违规，如何有效避免风险，可以使用第三方接口进行内容检测。</p>
+<p>目前很多平台都支持内容检测，如阿里云、腾讯云、百度AI、网易云等国内大型互联网公司都对外提供了API。</p>
+<p>按照性能和收费来看，黑马头条项目使用的就是阿里云的内容安全接口，使用到了图片和文本的审核。</p>
+<p>阿里云收费标准：<a title="https://www.aliyun.com/price/product/?spm=a2c4g.11186623.2.10.4146401eg5oeu8#/lvwang/detail" href="https://www.aliyun.com/price/product/?spm=a2c4g.11186623.2.10.4146401eg5oeu8#/lvwang/detail">https://www.aliyun.com/price/product/?spm=a2c4g.11186623.2.10.4146401eg5oeu8#/lvwang/detail</a></p>
+<h3 id="22-阿里云服务介绍">2.2 阿里云服务介绍</h3>
+<h4 id="221-准备工作">2.2.1 准备工作</h4>
+<p>您在使用内容检测API之前，需要先注册阿里云账号，添加Access Key并签约云盾内容安全。</p>
+<p><strong>操作步骤</strong></p>
+<ol>
+<li>
+<p>前往<a title="https://www.aliyun.com/" href="https://www.aliyun.com/">阿里云官网</a>注册账号。如果已有注册账号，请跳过此步骤。</p>
+<p>进入阿里云首页后，如果没有阿里云的账户需要先进行注册，才可以进行登录。由于注册较为简单，课程和讲义不在进行体现（注册可以使用多种方式，如淘宝账号、支付宝账号、微博账号等…）。</p>
+<p>需要实名认证和活体认证。</p>
+</li>
+<li>
+<p>打开<a title="https://promotion.aliyun.com/ntms/act/lvwangdemo.html" href="https://promotion.aliyun.com/ntms/act/lvwangdemo.html">云盾内容安全产品试用页面</a>，单击<strong>立即开通</strong>，正式开通服务。</p>
+<p><img src="/_resources/5a923af595344b63a412642967137ec2.png" /></p>
+<p>内容安全控制台</p>
+<p><img src="/_resources/64eb0f1ca9784c8fa8b8db82d4e270f0.png" /></p>
+</li>
+<li>
+<p>在<a title="https://ak-console.aliyun.com/#/accesskey" href="https://ak-console.aliyun.com/#/accesskey">AccessKey管理页面</a>管理您的AccessKeyID和AccessKeySecret。</p>
+<p><img src="/_resources/943bc39e267b4e0e939422f998c484ba.png" /></p>
+<p>管理自己的AccessKey,可以新建和删除AccessKey</p>
+<p><img src="/_resources/cc01a04494854c769626d1b20b7ceb55.png" /></p>
+<p>查看自己的AccessKey，</p>
+<p>AccessKey默认是隐藏的，第一次申请的时候可以保存AccessKey，点击显示，通过验证手机号后也可以查看</p>
+<p><img src="/_resources/23eb7494e9664b7b8d83ee44d1ee1028.png" /></p>
+</li>
+<li>
+<p>如果使用子用户AccessKey的话需要设置权限</p>
+<p><img src="/_resources/bceeb317343947b7bc8bc71f1aa0ae82.png" /></p>
+<p><img src="/_resources/b613925de0f94016bf3762c742f78eec.png" /></p>
+</li>
+</ol>
+<h4 id="222-阿里云安全-文本内容垃圾检测">2.2.2 阿里云安全-文本内容垃圾检测</h4>
+<p><a title="https://help.aliyun.com/document_detail/70439.html?spm=a2c4g.11186623.6.659.35ac3db3l0wV5k" href="https://help.aliyun.com/document_detail/70439.html?spm=a2c4g.11186623.6.659.35ac3db3l0wV5k">文本垃圾内容检测接口说明</a></p>
+<p>示例代码地址：<a title="https://help.aliyun.com/document_detail/53427.html?spm=a2c4g.11186623.6.717.466d7544QbU8Lr" href="https://help.aliyun.com/document_detail/53427.html?spm=a2c4g.11186623.6.717.466d7544QbU8Lr">https://help.aliyun.com/document_detail/53427.html?spm=a2c4g.11186623.6.717.466d7544QbU8Lr</a></p>
+<p>创建项目greenweb-demo</p>
+<p>安装sdk</p>
+<div><pre class="hljs"><code>    <span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.aliyun<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>aliyun-java-sdk-core<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>4.1.1<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.aliyun<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>aliyun-java-sdk-green<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.6.5<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.alibaba<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>fastjson<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.2.51<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.aliyun.oss<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>aliyun-sdk-oss<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>2.8.3<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>commons-io<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>commons-io<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>2.4<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>commons-codec<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>commons-codec<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.10<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span></code></pre></div>
+<p>示例代码</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.green;
+
+<span class="hljs-keyword">import</span> com.alibaba.fastjson.JSON;
+<span class="hljs-keyword">import</span> com.alibaba.fastjson.JSONArray;
+<span class="hljs-keyword">import</span> com.alibaba.fastjson.JSONObject;
+<span class="hljs-keyword">import</span> com.aliyun.oss.ClientException;
+<span class="hljs-keyword">import</span> com.aliyuncs.DefaultAcsClient;
+<span class="hljs-keyword">import</span> com.aliyuncs.IAcsClient;
+<span class="hljs-keyword">import</span> com.aliyuncs.exceptions.ServerException;
+<span class="hljs-keyword">import</span> com.aliyuncs.green.model.v20180509.TextScanRequest;
+<span class="hljs-keyword">import</span> com.aliyuncs.http.FormatType;
+<span class="hljs-keyword">import</span> com.aliyuncs.http.HttpResponse;
+<span class="hljs-keyword">import</span> com.aliyuncs.profile.DefaultProfile;
+<span class="hljs-keyword">import</span> com.aliyuncs.profile.IClientProfile;
+
+<span class="hljs-keyword">import</span> java.util.*;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TextScan</span> {
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> Exception {
+        <span class="hljs-type">IClientProfile</span> <span class="hljs-variable">profile</span> <span class="hljs-operator">=</span> DefaultProfile
+            .getProfile(<span class="hljs-string">"cn-shanghai"</span>, <span class="hljs-string">"LTAI5tP6XbuXaHdVVd2LbPHZ"</span>, <span class="hljs-string">"gSadtXqwUzSpyEcm5e3OWyypJuWJRz"</span>);
+        DefaultProfile
+            .addEndpoint(<span class="hljs-string">"cn-shanghai"</span>, <span class="hljs-string">"Green"</span>, <span class="hljs-string">"green.cn-shanghai.aliyuncs.com"</span>);
+        <span class="hljs-type">IAcsClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultAcsClient</span>(profile);
+        <span class="hljs-type">TextScanRequest</span> <span class="hljs-variable">textScanRequest</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">TextScanRequest</span>();
+        textScanRequest.setAcceptFormat(FormatType.JSON); <span class="hljs-comment">// 指定API返回格式。</span>
+        textScanRequest.setHttpContentType(FormatType.JSON);
+        textScanRequest.setMethod(com.aliyuncs.http.MethodType.POST); <span class="hljs-comment">// 指定请求方法。</span>
+        textScanRequest.setEncoding(<span class="hljs-string">"UTF-8"</span>);
+        textScanRequest.setRegionId(<span class="hljs-string">"cn-shanghai"</span>);
+        List&lt;Map&lt;String, Object&gt;&gt; tasks = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;Map&lt;String, Object&gt;&gt;();
+        Map&lt;String, Object&gt; task1 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LinkedHashMap</span>&lt;String, Object&gt;();
+        task1.put(<span class="hljs-string">"dataId"</span>, UUID.randomUUID().toString());
+        <span class="hljs-comment">/**
+         * 待检测的文本，长度不超过10000个字符。
+         */</span>
+        task1.put(<span class="hljs-string">"content"</span>, <span class="hljs-string">"打工是不可能的,一辈子都不可能的"</span>);
+        tasks.add(task1);
+        <span class="hljs-type">JSONObject</span> <span class="hljs-variable">data</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JSONObject</span>();
+
+        <span class="hljs-comment">/**
+         * 检测场景。文本垃圾检测请传递antispam。
+         **/</span>
+        data.put(<span class="hljs-string">"scenes"</span>, Arrays.asList(<span class="hljs-string">"antispam"</span>));
+        data.put(<span class="hljs-string">"tasks"</span>, tasks);
+        System.out.println(JSON.toJSONString(data, <span class="hljs-literal">true</span>));
+        textScanRequest.setHttpContent(data.toJSONString().getBytes(<span class="hljs-string">"UTF-8"</span>), <span class="hljs-string">"UTF-8"</span>, FormatType.JSON);
+        <span class="hljs-comment">// 请务必设置超时时间。</span>
+        textScanRequest.setConnectTimeout(<span class="hljs-number">3000</span>);
+        textScanRequest.setReadTimeout(<span class="hljs-number">6000</span>);
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-type">HttpResponse</span> <span class="hljs-variable">httpResponse</span> <span class="hljs-operator">=</span> client.doAction(textScanRequest);
+            <span class="hljs-keyword">if</span>(httpResponse.isSuccess()){
+                <span class="hljs-type">JSONObject</span> <span class="hljs-variable">scrResponse</span> <span class="hljs-operator">=</span> JSON.parseObject(<span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(httpResponse.getHttpContent(), <span class="hljs-string">"UTF-8"</span>));
+                System.out.println(JSON.toJSONString(scrResponse, <span class="hljs-literal">true</span>));
+                <span class="hljs-keyword">if</span> (<span class="hljs-number">200</span> == scrResponse.getInteger(<span class="hljs-string">"code"</span>)) {
+                    <span class="hljs-type">JSONArray</span> <span class="hljs-variable">taskResults</span> <span class="hljs-operator">=</span> scrResponse.getJSONArray(<span class="hljs-string">"data"</span>);
+                    <span class="hljs-keyword">for</span> (Object taskResult : taskResults) {
+                        <span class="hljs-keyword">if</span>(<span class="hljs-number">200</span> == ((JSONObject)taskResult).getInteger(<span class="hljs-string">"code"</span>)){
+                            <span class="hljs-type">JSONArray</span> <span class="hljs-variable">sceneResults</span> <span class="hljs-operator">=</span> ((JSONObject)taskResult).getJSONArray(<span class="hljs-string">"results"</span>);
+                            <span class="hljs-keyword">for</span> (Object sceneResult : sceneResults) {
+                                <span class="hljs-type">String</span> <span class="hljs-variable">scene</span> <span class="hljs-operator">=</span> ((JSONObject)sceneResult).getString(<span class="hljs-string">"scene"</span>);
+                                <span class="hljs-type">String</span> <span class="hljs-variable">suggestion</span> <span class="hljs-operator">=</span> ((JSONObject)sceneResult).getString(<span class="hljs-string">"suggestion"</span>);
+                                <span class="hljs-comment">// 根据scene和suggetion做相关处理。</span>
+                                <span class="hljs-comment">// suggestion为pass表示未命中垃圾。suggestion为block表示命中了垃圾，可以通过label字段查看命中的垃圾分类。</span>
+                                System.out.println(<span class="hljs-string">"args = ["</span> + scene + <span class="hljs-string">"]"</span>);
+                                System.out.println(<span class="hljs-string">"args = ["</span> + suggestion + <span class="hljs-string">"]"</span>);
+                            }
+                        }<span class="hljs-keyword">else</span>{
+                            System.out.println(<span class="hljs-string">"task process fail:"</span> + ((JSONObject)taskResult).getInteger(<span class="hljs-string">"code"</span>));
+                        }
+                    }
+                } <span class="hljs-keyword">else</span> {
+                    System.out.println(<span class="hljs-string">"detect not success. code:"</span> + scrResponse.getInteger(<span class="hljs-string">"code"</span>));
+                }
+            }<span class="hljs-keyword">else</span>{
+                System.out.println(<span class="hljs-string">"response not success. status:"</span> + httpResponse.getStatus());
+            }
+        } <span class="hljs-keyword">catch</span> (ServerException e) {
+            e.printStackTrace();
+        } <span class="hljs-keyword">catch</span> (ClientException e) {
+            e.printStackTrace();
+        } <span class="hljs-keyword">catch</span> (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+}
+</code></pre></div>
+<p>测试一：输入以上的内容"我是一个文本"，检测通过</p>
+<p><img src="/_resources/77b97854ac844c68935ae919ffd57790.png" /></p>
+<p>测试二：如果在上述文本内容中添加“冰毒买卖”，就会未通过</p>
+<p><img src="/_resources/a9c01c394a674d0fb72c1a94840a1684.png" /></p>
+<h4 id="223-阿里云安全-图片审核">2.2.3 阿里云安全-图片审核</h4>
+<p>参考阿里云提供的接口文档说明<a title="https://help.aliyun.com/document_detail/70292.html?spm=a2c4g.11186623.6.616.5d7d1e7f9vDRz4" href="https://help.aliyun.com/document_detail/70292.html?spm=a2c4g.11186623.6.616.5d7d1e7f9vDRz4">文档地址</a></p>
+<p><a title="https://help.aliyun.com/document_detail/53424.html?spm=a2c4g.11186623.6.715.c8f69b12ey35j4" href="https://help.aliyun.com/document_detail/53424.html?spm=a2c4g.11186623.6.715.c8f69b12ey35j4">示例代码地址</a></p>
+<p>注意事项：如果使用本地文件或者二进制文件检测，请下载并在项目工程中引入<a title="https://aligreen-shanghai-share.oss-cn-shanghai.aliyuncs.com/com.aliyuncs.green.extension.uploader.zip" href="https://aligreen-shanghai-share.oss-cn-shanghai.aliyuncs.com/com.aliyuncs.green.extension.uploader.zip">Extension.Uploader工具类</a>。</p>
+<p>修改后的示例代码</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.green;
+
+<span class="hljs-keyword">import</span> com.alibaba.fastjson.JSON;
+<span class="hljs-keyword">import</span> com.alibaba.fastjson.JSONArray;
+<span class="hljs-keyword">import</span> com.alibaba.fastjson.JSONObject;
+<span class="hljs-keyword">import</span> com.aliyuncs.DefaultAcsClient;
+<span class="hljs-keyword">import</span> com.aliyuncs.IAcsClient;
+<span class="hljs-keyword">import</span> com.aliyuncs.green.model.v20180509.ImageSyncScanRequest;
+<span class="hljs-keyword">import</span> com.aliyuncs.http.FormatType;
+<span class="hljs-keyword">import</span> com.aliyuncs.http.HttpResponse;
+<span class="hljs-keyword">import</span> com.aliyuncs.http.MethodType;
+<span class="hljs-keyword">import</span> com.aliyuncs.http.ProtocolType;
+<span class="hljs-keyword">import</span> com.aliyuncs.profile.DefaultProfile;
+<span class="hljs-keyword">import</span> com.aliyuncs.profile.IClientProfile;
+
+<span class="hljs-keyword">import</span> java.util.*;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">UrlScan</span> {
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> Exception {
+        <span class="hljs-type">IClientProfile</span> <span class="hljs-variable">profile</span> <span class="hljs-operator">=</span> DefaultProfile
+                .getProfile(<span class="hljs-string">"cn-shanghai"</span>, <span class="hljs-string">"LTAI5tP6XbuXaHdVVd2LbPHZ"</span>, <span class="hljs-string">"gSadtXqwUzSpyEcm5e3OWyypJuWJRz"</span>);
+        DefaultProfile
+            .addEndpoint(<span class="hljs-string">"cn-shanghai"</span>, <span class="hljs-string">"Green"</span>, <span class="hljs-string">"green.cn-shanghai.aliyuncs.com"</span>);
+        <span class="hljs-type">IAcsClient</span> <span class="hljs-variable">client</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">DefaultAcsClient</span>(profile);
+
+        <span class="hljs-type">ImageSyncScanRequest</span> <span class="hljs-variable">imageSyncScanRequest</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ImageSyncScanRequest</span>();
+        <span class="hljs-comment">// 指定API返回格式。</span>
+        imageSyncScanRequest.setAcceptFormat(FormatType.JSON);
+        <span class="hljs-comment">// 指定请求方法。</span>
+        imageSyncScanRequest.setMethod(MethodType.POST);
+        imageSyncScanRequest.setEncoding(<span class="hljs-string">"utf-8"</span>);
+        <span class="hljs-comment">// 支持HTTP和HTTPS。</span>
+        imageSyncScanRequest.setProtocol(ProtocolType.HTTP);
+
+
+        <span class="hljs-type">JSONObject</span> <span class="hljs-variable">httpBody</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JSONObject</span>();
+        <span class="hljs-comment">/**
+         * 设置要检测的风险场景。计费依据此处传递的场景计算。
+         * 一次请求中可以同时检测多张图片，每张图片可以同时检测多个风险场景，计费按照场景计算。
+         * 例如，检测2张图片，场景传递porn和terrorism，计费会按照2张图片鉴黄，2张图片暴恐检测计算。
+         * porn：表示鉴黄场景。
+         */</span>
+        httpBody.put(<span class="hljs-string">"scenes"</span>, Arrays.asList(<span class="hljs-string">"terrorism"</span>));
+
+        <span class="hljs-comment">/**
+         * 设置待检测图片。一张图片对应一个task。
+         * 多张图片同时检测时，处理的时间由最后一个处理完的图片决定。
+         * 通常情况下批量检测的平均响应时间比单张检测的要长。一次批量提交的图片数越多，响应时间被拉长的概率越高。
+         * 这里以单张图片检测作为示例, 如果是批量图片检测，请自行构建多个task。
+         */</span>
+        <span class="hljs-type">JSONObject</span> <span class="hljs-variable">task</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JSONObject</span>();
+        task.put(<span class="hljs-string">"dataId"</span>, UUID.randomUUID().toString());
+
+        <span class="hljs-comment">// 设置图片链接。</span>
+        task.put(<span class="hljs-string">"url"</span>, <span class="hljs-string">"https://myth.oss-cn-beijing.aliyuncs.com//8817f5ae-ef59-4f34-a603-486124712d39.png"</span>);
+        task.put(<span class="hljs-string">"time"</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>());
+        httpBody.put(<span class="hljs-string">"tasks"</span>, Arrays.asList(task));
+
+        imageSyncScanRequest.setHttpContent(org.apache.commons.codec.binary.StringUtils.getBytesUtf8(httpBody.toJSONString()),
+            <span class="hljs-string">"UTF-8"</span>, FormatType.JSON);
+
+        <span class="hljs-comment">/**
+         * 请设置超时时间。服务端全链路处理超时时间为10秒，请做相应设置。
+         * 如果您设置的ReadTimeout小于服务端处理的时间，程序中会获得一个ReadTimeout异常。
+         */</span>
+        imageSyncScanRequest.setConnectTimeout(<span class="hljs-number">3000</span>);
+        imageSyncScanRequest.setReadTimeout(<span class="hljs-number">10000</span>);
+        <span class="hljs-type">HttpResponse</span> <span class="hljs-variable">httpResponse</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;
+        <span class="hljs-keyword">try</span> {
+            httpResponse = client.doAction(imageSyncScanRequest);
+        } <span class="hljs-keyword">catch</span> (Exception e) {
+            e.printStackTrace();
+        }
+
+        <span class="hljs-comment">// 服务端接收到请求，完成处理后返回的结果。</span>
+        <span class="hljs-keyword">if</span> (httpResponse != <span class="hljs-literal">null</span> &amp;&amp; httpResponse.isSuccess()) {
+            <span class="hljs-type">JSONObject</span> <span class="hljs-variable">scrResponse</span> <span class="hljs-operator">=</span> JSON.parseObject(org.apache.commons.codec.binary.StringUtils.newStringUtf8(httpResponse.getHttpContent()));
+            System.out.println(JSON.toJSONString(scrResponse, <span class="hljs-literal">true</span>));
+            <span class="hljs-type">int</span> <span class="hljs-variable">requestCode</span> <span class="hljs-operator">=</span> scrResponse.getIntValue(<span class="hljs-string">"code"</span>);
+            <span class="hljs-comment">// 每一张图片的检测结果。</span>
+            <span class="hljs-type">JSONArray</span> <span class="hljs-variable">taskResults</span> <span class="hljs-operator">=</span> scrResponse.getJSONArray(<span class="hljs-string">"data"</span>);
+            <span class="hljs-keyword">if</span> (<span class="hljs-number">200</span> == requestCode) {
+                <span class="hljs-keyword">for</span> (Object taskResult : taskResults) {
+                    <span class="hljs-comment">// 单张图片的处理结果。</span>
+                    <span class="hljs-type">int</span> <span class="hljs-variable">taskCode</span> <span class="hljs-operator">=</span> ((JSONObject) taskResult).getIntValue(<span class="hljs-string">"code"</span>);
+                    <span class="hljs-comment">// 图片对应检测场景的处理结果。如果是多个场景，则会有每个场景的结果。</span>
+                    <span class="hljs-type">JSONArray</span> <span class="hljs-variable">sceneResults</span> <span class="hljs-operator">=</span> ((JSONObject) taskResult).getJSONArray(<span class="hljs-string">"results"</span>);
+                    <span class="hljs-keyword">if</span> (<span class="hljs-number">200</span> == taskCode) {
+                        <span class="hljs-keyword">for</span> (Object sceneResult : sceneResults) {
+                            <span class="hljs-type">String</span> <span class="hljs-variable">scene</span> <span class="hljs-operator">=</span> ((JSONObject) sceneResult).getString(<span class="hljs-string">"scene"</span>);
+                            <span class="hljs-type">String</span> <span class="hljs-variable">suggestion</span> <span class="hljs-operator">=</span> ((JSONObject) sceneResult).getString(<span class="hljs-string">"suggestion"</span>);
+                            <span class="hljs-comment">// 根据scene和suggestion做相关处理。</span>
+                            <span class="hljs-comment">// 根据不同的suggestion结果做业务上的不同处理。例如，将违规数据删除等。</span>
+                            System.out.println(<span class="hljs-string">"scene = ["</span> + scene + <span class="hljs-string">"]"</span>);
+                            System.out.println(<span class="hljs-string">"suggestion = ["</span> + suggestion + <span class="hljs-string">"]"</span>);
+                        }
+                    } <span class="hljs-keyword">else</span> {
+                        <span class="hljs-comment">// 单张图片处理失败, 原因视具体的情况详细分析。</span>
+                        System.out.println(<span class="hljs-string">"task process fail. task response:"</span> + JSON.toJSONString(taskResult));
+                    }
+                }
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-comment">/**
+                 * 表明请求整体处理失败，原因视具体的情况详细分析。
+                 */</span>
+                System.out.println(<span class="hljs-string">"the whole image scan request failed. response:"</span> + JSON.toJSONString(scrResponse));
+            }
+        }
+    }
+
+}
+</code></pre></div>
+<p>测试：</p>
+<p>测试结果，ak47.jpg涉及兵器，审核不通过，itheima.jpg审核通过，如果文章中有任何一张图片审核不通过，则文章审核就不通过。</p>
+<p>image1测试结果：不通过</p>
+<p><img src="/_resources/5d6052a5dad74d2db8f93753eb6f5d6e.png" /></p>
+<p>image2测试结果：通过</p>
+<p><img src="/_resources/9ff8ba1820e2420ca467ec7bfb55707f.png" /></p>
+<h3 id="23-阿里云安全集成到项目">2.3 阿里云安全集成到项目</h3>
+<h4 id="231-依赖引入">2.3.1 依赖引入</h4>
+<p>在leadnews-common中引入阿里云sdk依赖</p>
+<div><pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.aliyun.oss<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>aliyun-sdk-oss<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.10.2<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.aliyun<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>aliyun-java-sdk-core<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.aliyun<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>aliyun-java-sdk-green<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span></code></pre></div>
+<h4 id="232-引入图片上传工具类">2.3.2 引入图片上传工具类</h4>
+<p>从资料中拷贝aliyun目录到leadnews-common中，结构如下：</p>
+<p><img src="/_resources/dbdc07040d0d48368ac783375e2631b1.png" /></p>
+<h4 id="233-配置文件">2.3.3 配置文件</h4>
+<p>在common的resources 中添加配置 oss.properties</p>
+<div><pre class="hljs"><code><span class="hljs-attr">aliyun.oss.accessKeyId</span>=<span class="hljs-string">LTAI5tP6XbuXaHdVVd2LbPHZ</span>
+<span class="hljs-attr">aliyun.oss.accessKeySecret</span>=<span class="hljs-string">gSadtXqwUzSpyEcm5e3OWyypJuWJRz</span>
+<span class="hljs-attr">aliyun.oss.scenes</span>=<span class="hljs-string">porn,terrorism</span>
+</code></pre></div>
+<p>scenes，当前的这个场景设置，只有在图片审核的时候会用到，可以根据实际情况自由组合</p>
+<h4 id="234-项目引用">2.3.4 项目引用</h4>
+<p>在heima-leadnews-media微服务中添加配置类，支持阿里云接口服务</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.config;
+
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.ComponentScan;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;
+
+<span class="hljs-meta">@Configuration</span>
+<span class="hljs-meta">@ComponentScan("com.heima.common.aliyun")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AliyunConfig</span> {
+}</code></pre></div>
+<h2 id="3-app端文章保存">3 app端文章保存</h2>
+<h3 id="31-表结构说明">3.1 表结构说明</h3>
+<p>ap_article 文章信息表</p>
+<p><img src="/_resources/7f75f33ce699413f943b139f7f01219e.png" /></p>
+<p>ap_article_content 文章内容表</p>
+<p><img src="/_resources/938ecfc61a3e4c829a9906d714ca4015.png" /></p>
+<h3 id="32-分布式id">3.2 分布式id</h3>
+<p>随着业务的增长，文章表可能要占用很大的物理存储空间，为了解决该问题，后期使用数据库分片技术。将一个数据库进行拆分，通过数据库中间件连接。如果数据库中该表选用ID自增策略，则可能产生重复的ID，此时应该使用分布式ID生成策略来生成ID。</p>
+<p><img src="/_resources/f9e4e6b4836847f6860b95065026182f.png" /></p>
+<p>snowflake是Twitter开源的分布式ID生成算法，结果是一个long型的ID。其核心思想是：使用41bit作为毫秒数，10bit作为机器的ID（5个bit是数据中心，5个bit的机器ID），12bit作为毫秒内的流水号（意味着每个节点在每毫秒可以产生 4096 个 ID），最后还有一个符号位，永远是0</p>
+<p><img src="/_resources/7dc180919eeb46da8501081530d51f1c.png" /></p>
+<p>文章端相关的表都使用雪花算法生成id,包括ap_article、 ap_article_config、 ap_article_content</p>
+<p>mybatis-plus已经集成了雪花算法，完成以下两步即可在项目中集成雪花算法</p>
+<p>在实体类中的id上加入如下配置，指定类型为ASSIGN_ID</p>
+<div><pre class="hljs"><code><span class="hljs-meta">@TableId(value = "id",type = IdType.ASSIGN_ID)</span>
+<span class="hljs-keyword">private</span> Long id;</code></pre></div>
+<p>使用代码生成器生成ap_article\ap_article_content各层代码,这里需要调整下生成的ID类型</p>
+<div><pre class="hljs"><code><span class="hljs-comment">// 设置主键类型  ASSIGN_ID为分布式全局唯一ID  AUTO:数据库自增</span>
+<span class="hljs-comment">// gc.setIdType(IdType.AUTO);</span>
+gc.setIdType(IdType.ASSIGN_ID);</code></pre></div>
+<h3 id="33-思路分析">3.3 思路分析</h3>
+<p>在文章审核成功以后需要在app的article库中新增文章数据</p>
+<p>1.保存文章信息 ap_article</p>
+<p>2.保存文章内容 ap_article_content</p>
+<p>实现思路：</p>
+<p><img src="/_resources/dd2e94e7dfdb4185b0a368655fbbc129.png" /></p>
+<h3 id="34-功能实现">3.4 功能实现</h3>
+<p>ArticleDto</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.article.dto;
+
+<span class="hljs-keyword">import</span> com.heima.article.entity.ApArticle;
+<span class="hljs-keyword">import</span> lombok.Data;
+<span class="hljs-keyword">import</span> lombok.EqualsAndHashCode;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-meta">@EqualsAndHashCode(callSuper = true)</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ArticleDto</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ApArticle</span> {
+    <span class="hljs-comment">/**
+     * 文章内容
+     */</span>
+    <span class="hljs-keyword">private</span> String content;
+}</code></pre></div>
+<p>接口定义</p>
+<ul>
+<li>保存app文章</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.article.controller;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.toolkit.StringUtils;
+<span class="hljs-keyword">import</span> com.heima.article.dto.ArticleDto;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> io.swagger.annotations.Api;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiOperation;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParam;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParams;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.*;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.metadata.IPage;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+<span class="hljs-keyword">import</span> com.heima.article.service.IApArticleService;
+<span class="hljs-keyword">import</span> java.util.List;
+<span class="hljs-keyword">import</span> java.util.Map;
+
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 文章信息表，存储已发布的文章 前端控制器
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-07-19
+ */</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-meta">@RequestMapping("/api/v1/article")</span>
+<span class="hljs-meta">@Api(tags = "文章信息表，存储已发布的文章接口")</span>
+<span class="hljs-meta">@CrossOrigin</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ApArticleController</span>{
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IApArticleService apArticleService;
+
+
+    <span class="hljs-comment">/**
+     * 保存文章
+     * <span class="hljs-doctag">@param</span> dto
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;Long&gt; <span class="hljs-title function_">saveArticle</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> ArticleDto dto)</span>{
+        <span class="hljs-keyword">return</span> apArticleService.saveArticle(dto);
+    }
+
+
+}</code></pre></div>
+<p>业务层接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.article.service;
+
+<span class="hljs-keyword">import</span> com.heima.article.dto.ArticleDto;
+<span class="hljs-keyword">import</span> com.heima.article.entity.ApArticle;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.IService;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 文章信息表，存储已发布的文章 服务类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-07-19
+ */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IApArticleService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;ApArticle&gt; {
+
+    ResponseResult&lt;Long&gt; <span class="hljs-title function_">saveArticle</span><span class="hljs-params">(ArticleDto dto)</span>;
+}
+</code></pre></div>
+<p>实现</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.article.service.impl;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+<span class="hljs-keyword">import</span> com.heima.article.dto.ArticleDto;
+<span class="hljs-keyword">import</span> com.heima.article.entity.ApArticle;
+<span class="hljs-keyword">import</span> com.heima.article.entity.ApArticleContent;
+<span class="hljs-keyword">import</span> com.heima.article.mapper.ApArticleMapper;
+<span class="hljs-keyword">import</span> com.heima.article.service.IApArticleContentService;
+<span class="hljs-keyword">import</span> com.heima.article.service.IApArticleService;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> org.springframework.beans.BeanUtils;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+
+<span class="hljs-keyword">import</span> java.util.Date;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 文章信息表，存储已发布的文章 服务实现类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-07-19
+ */</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ApArticleServiceImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ServiceImpl</span>&lt;ApArticleMapper, ApArticle&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IApArticleService</span> {
+
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IApArticleContentService contentService;
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;Long&gt; <span class="hljs-title function_">saveArticle</span><span class="hljs-params">(ArticleDto dto)</span> {
+        <span class="hljs-comment">// 需求分析</span>
+        <span class="hljs-type">ApArticle</span> <span class="hljs-variable">apArticle</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ApArticle</span>();
+        BeanUtils.copyProperties(dto, apArticle);
+        <span class="hljs-comment">// 判断dto中id是否为空</span>
+        <span class="hljs-keyword">if</span> (dto.getId() == <span class="hljs-literal">null</span>) {
+            <span class="hljs-comment">// id为空 新增文章</span>
+            <span class="hljs-comment">// 保存文章表</span>
+            apArticle.setCreatedTime(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>());
+            <span class="hljs-built_in">this</span>.save(apArticle);
+            <span class="hljs-comment">// 保存内容表</span>
+            <span class="hljs-type">ApArticleContent</span> <span class="hljs-variable">content</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ApArticleContent</span>();
+            content.setArticleId(apArticle.getId());
+            content.setContent(dto.getContent());
+            contentService.save(content);
+            <span class="hljs-comment">// 返回通用的响应</span>
+            <span class="hljs-keyword">return</span> ResponseResult.okResult(apArticle.getId());
+        } <span class="hljs-keyword">else</span> {
+            <span class="hljs-comment">// id不为空,修改文章</span>
+            <span class="hljs-built_in">this</span>.updateById(apArticle);
+            <span class="hljs-comment">// 修改内容表</span>
+            LambdaUpdateWrapper&lt;ApArticleContent&gt; update = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaUpdateWrapper</span>&lt;&gt;();
+            update.eq(ApArticleContent::getArticleId, dto.getId());
+            update.set(ApArticleContent::getContent, dto.getContent());
+            contentService.update(update);
+            <span class="hljs-keyword">return</span> ResponseResult.okResult(apArticle.getId());
+        }
+    }
+}
+</code></pre></div>
+<h2 id="4-文章审核功能实现">4 文章审核功能实现</h2>
+<h3 id="41-文章feign接口">4.1  文章feign接口</h3>
+<p>在自媒体启动类上开启远程调用</p>
+<div><pre class="hljs"><code><span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-meta">@EnableFeignClients</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MediaApp</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        SpringApplication.run(MediaApp.class, args);
+    }
+}</code></pre></div>
+<p>在media端定义远程接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.feign;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.media.dto.ArticleDto;
+<span class="hljs-keyword">import</span> org.springframework.cloud.openfeign.FeignClient;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.PostMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RequestBody;
+
+<span class="hljs-meta">@FeignClient(value = "leadnews-article")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">ArticleFeign</span> {
+
+    <span class="hljs-comment">/**
+     * 保存文章
+     * <span class="hljs-doctag">@param</span> dto
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping("/api/v1/article")</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;Long&gt; <span class="hljs-title function_">saveArticle</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> ArticleDto dto)</span>;
+}
+</code></pre></div>
+<h3 id="42-文章审核功能实现">4.2 文章审核功能实现</h3>
+<p>新建自动审核接口：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.service;
+
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmNews;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IAuditService</span> {
+    <span class="hljs-keyword">void</span> <span class="hljs-title function_">audit</span><span class="hljs-params">(WmNews wmNews)</span>;
+}
+</code></pre></div>
+<p>自动审核实现类：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.service.impl;
+
+<span class="hljs-keyword">import</span> com.alibaba.fastjson.JSON;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+<span class="hljs-keyword">import</span> com.heima.common.aliyun.GreenImageScan;
+<span class="hljs-keyword">import</span> com.heima.common.aliyun.GreenTextScan;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.enums.AppHttpCodeEnum;
+<span class="hljs-keyword">import</span> com.heima.common.minio.MinIOService;
+<span class="hljs-keyword">import</span> com.heima.common.util.SensitiveWordUtil;
+<span class="hljs-keyword">import</span> com.heima.media.dto.ArticleDto;
+<span class="hljs-keyword">import</span> com.heima.media.dto.ContentDto;
+<span class="hljs-keyword">import</span> com.heima.media.dto.ImageDto;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmChannel;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmNews;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmSensitive;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmUser;
+<span class="hljs-keyword">import</span> com.heima.media.feign.ArticleFeign;
+<span class="hljs-keyword">import</span> com.heima.media.service.*;
+<span class="hljs-keyword">import</span> org.apache.commons.io.IOUtils;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.scheduling.annotation.Async;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+<span class="hljs-keyword">import</span> org.springframework.util.StringUtils;
+
+<span class="hljs-keyword">import</span> java.io.InputStream;
+<span class="hljs-keyword">import</span> java.util.*;
+<span class="hljs-keyword">import</span> java.util.function.Function;
+
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AuditServiceImpl</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IAuditService</span> {
+    <span class="hljs-comment">/**
+     * 审核
+     *
+     * <span class="hljs-doctag">@param</span> wmNews
+     */</span>
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-meta">@Async</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">audit</span><span class="hljs-params">(WmNews wmNews)</span> {
+        System.out.println(Thread.currentThread().getName() + <span class="hljs-string">" 开始执行自动审核服务..."</span>);
+        <span class="hljs-comment">// 判断自媒体文章的状态,如果状态为1 进入自动审核流程</span>
+        <span class="hljs-keyword">if</span> (wmNews.getStatus() == <span class="hljs-number">1</span>) {
+            <span class="hljs-comment">// 审核文本内容,调用阿里云文本审核</span>
+            <span class="hljs-comment">// 提取内容中的文本内容和图片内容</span>
+            Map&lt;String, Object&gt; map = getTextAndImagesFromContent(wmNews.getContent());
+            <span class="hljs-type">String</span> <span class="hljs-variable">text</span> <span class="hljs-operator">=</span> (String) map.get(<span class="hljs-string">"text"</span>);
+            <span class="hljs-comment">// 内容图片</span>
+            List&lt;String&gt; images = (List&lt;String&gt;) map.get(<span class="hljs-string">"images"</span>);
+
+            <span class="hljs-type">boolean</span> <span class="hljs-variable">textResult</span> <span class="hljs-operator">=</span> checkText(wmNews, text);
+            <span class="hljs-comment">// 审核图片内容,调用阿里云图片审核</span>
+            <span class="hljs-keyword">if</span> (!textResult) <span class="hljs-keyword">return</span>;
+            <span class="hljs-comment">// 有可能封面图片跟内容图片不一样</span>
+            List&lt;ImageDto&gt; coverImages = JSON.parseArray(wmNews.getImages(), ImageDto.class);
+            <span class="hljs-keyword">for</span> (ImageDto image : coverImages) {
+                <span class="hljs-keyword">if</span> (!images.contains(image.getUrl())) {
+                    images.add(image.getUrl());
+                }
+            }
+            <span class="hljs-type">boolean</span> <span class="hljs-variable">imageResult</span> <span class="hljs-operator">=</span> checkImage(wmNews, images);
+            <span class="hljs-comment">// 调用文章服务保存文章</span>
+            <span class="hljs-keyword">if</span> (!imageResult) <span class="hljs-keyword">return</span>;
+            saveArticle(wmNews);
+        }
+    }
+
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> ArticleFeign articleFeign;
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IWmUserService userService;
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IWmChannelService channelService;
+
+    <span class="hljs-comment">/**
+     * 保存文章
+     *
+     * <span class="hljs-doctag">@param</span> wmNews
+     */</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">saveArticle</span><span class="hljs-params">(WmNews wmNews)</span> {
+        <span class="hljs-comment">// 调用文章服务接口</span>
+        <span class="hljs-type">ArticleDto</span> <span class="hljs-variable">dto</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArticleDto</span>();
+        dto.setTitle(wmNews.getTitle());
+        <span class="hljs-comment">// 从 wm_user 查询作者信息</span>
+        <span class="hljs-type">WmUser</span> <span class="hljs-variable">wmUser</span> <span class="hljs-operator">=</span> userService.getById(wmNews.getUserId());
+        dto.setAuthorId(wmUser.getApAuthorId());
+        dto.setAuthorName(wmUser.getName());
+        dto.setChannelId(wmNews.getChannelId());
+        <span class="hljs-comment">// 查询频道名称</span>
+        <span class="hljs-type">WmChannel</span> <span class="hljs-variable">wmChannel</span> <span class="hljs-operator">=</span> channelService.getById(wmNews.getChannelId());
+        dto.setChannelName(wmChannel.getName());
+        dto.setLayout(wmNews.getType());
+        dto.setFlag(<span class="hljs-number">0</span>);
+        <span class="hljs-comment">// 前端显示的图片是图片地址,中间已逗号分隔</span>
+        List&lt;ImageDto&gt; list = JSON.parseArray(wmNews.getImages(), ImageDto.class);
+        List&lt;String&gt; images = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();
+        <span class="hljs-keyword">for</span> (ImageDto imageDto : list) {
+            images.add(imageDto.getUrl());
+        }
+        <span class="hljs-comment">// 将集合转变成逗号分隔的字符串</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">join</span> <span class="hljs-operator">=</span> String.join(<span class="hljs-string">","</span>, images);
+        dto.setImages(join);
+        dto.setContent(wmNews.getContent());
+        ResponseResult&lt;Long&gt; longResponseResult = articleFeign.saveArticle(dto);
+        <span class="hljs-keyword">if</span> (longResponseResult.getCode().equals(AppHttpCodeEnum.SUCCESS.getCode())) {
+            <span class="hljs-type">Long</span> <span class="hljs-variable">articleId</span> <span class="hljs-operator">=</span> longResponseResult.getData();
+            <span class="hljs-keyword">if</span> (articleId != <span class="hljs-literal">null</span>) {
+                <span class="hljs-comment">// 将文章id写回到自媒体文章表中</span>
+                wmNews.setArticleId(articleId);
+                <span class="hljs-comment">// 修改文章表的状态为9</span>
+                wmNews.setStatus(<span class="hljs-number">9</span>);
+                newsService.updateById(wmNews);
+            }
+
+        }
+    }
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> MinIOService minIOService;
+
+    <span class="hljs-comment">/**
+     * 阿里云图片审核
+     *
+     * <span class="hljs-doctag">@param</span> wmNews
+     * <span class="hljs-doctag">@param</span> images
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">checkImage</span><span class="hljs-params">(WmNews wmNews, List&lt;String&gt; images)</span> {
+        <span class="hljs-type">boolean</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;
+        <span class="hljs-keyword">if</span> (images.size() == <span class="hljs-number">0</span>) {
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+        }
+        <span class="hljs-keyword">try</span> {
+            List&lt;<span class="hljs-type">byte</span>[]&gt; imageList = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();
+            <span class="hljs-comment">// minio服务部署在内网,需要先下载然后去阿里云审核</span>
+            <span class="hljs-keyword">for</span> (String image : images) {
+                <span class="hljs-keyword">if</span> (!StringUtils.isEmpty(image)) {
+                    <span class="hljs-type">InputStream</span> <span class="hljs-variable">inputStream</span> <span class="hljs-operator">=</span> minIOService.download(image);
+                    <span class="hljs-comment">// 流转字节数组</span>
+                    <span class="hljs-type">byte</span>[] bytes = IOUtils.toByteArray(inputStream);
+                    imageList.add(bytes);
+                }
+            }
+            <span class="hljs-type">Map</span> <span class="hljs-variable">map</span> <span class="hljs-operator">=</span> imageScan.imageScan(imageList);
+            <span class="hljs-comment">// 判断结果</span>
+            <span class="hljs-type">String</span> <span class="hljs-variable">suggestion</span> <span class="hljs-operator">=</span> (String) map.get(<span class="hljs-string">"suggestion"</span>);
+            <span class="hljs-keyword">switch</span> (suggestion) {
+                <span class="hljs-keyword">case</span> <span class="hljs-string">"pass"</span>:
+                    result = <span class="hljs-literal">true</span>;
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">case</span> <span class="hljs-string">"block"</span>:
+                    <span class="hljs-comment">// 审核不通过</span>
+                    <span class="hljs-comment">// 修改文章状态为 2</span>
+                    wmNews.setStatus(<span class="hljs-number">2</span>);
+                    <span class="hljs-comment">// 记录对应的原因</span>
+                    wmNews.setReason(<span class="hljs-string">"阿里云图片审核失败: "</span> + map.get(<span class="hljs-string">"label"</span>));
+                    newsService.updateById(wmNews);
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">case</span> <span class="hljs-string">"review"</span>:
+                    <span class="hljs-comment">// 需要人工审核</span>
+                    <span class="hljs-comment">// 修改文章状态为 3</span>
+                    wmNews.setStatus(<span class="hljs-number">3</span>);
+                    newsService.updateById(wmNews);
+                    <span class="hljs-keyword">break</span>;
+            }
+        } <span class="hljs-keyword">catch</span> (Exception e) {
+            e.printStackTrace();
+        }
+        <span class="hljs-keyword">return</span> result;
+    }
+
+    <span class="hljs-comment">/**
+     * 提取内容中的文本内容和图片内容
+     *
+     * <span class="hljs-doctag">@param</span> content
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">private</span> Map&lt;String, Object&gt; <span class="hljs-title function_">getTextAndImagesFromContent</span><span class="hljs-params">(String content)</span> {
+        Map&lt;String, Object&gt; map = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();
+        <span class="hljs-type">StringBuilder</span> <span class="hljs-variable">sb</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">StringBuilder</span>();
+        List&lt;String&gt; images = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();
+        List&lt;ContentDto&gt; dtos = JSON.parseArray(content, ContentDto.class);
+        <span class="hljs-keyword">for</span> (ContentDto dto : dtos) {
+            <span class="hljs-keyword">if</span> (dto.getType().equals(<span class="hljs-string">"text"</span>)) {
+                <span class="hljs-comment">// 添加到文本内容</span>
+                sb.append(dto.getValue());
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-comment">// 添加到图片集合</span>
+                images.add(dto.getValue());
+            }
+        }
+        map.put(<span class="hljs-string">"text"</span>, sb.toString());
+        map.put(<span class="hljs-string">"images"</span>, images);
+        <span class="hljs-keyword">return</span> map;
+    }
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> GreenTextScan textScan;
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> GreenImageScan imageScan;
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IWmNewsService newsService;
+
+    <span class="hljs-comment">/**
+     * 阿里云文本审核
+     *
+     * <span class="hljs-doctag">@param</span> wmNews
+     * <span class="hljs-doctag">@param</span> text
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">checkText</span><span class="hljs-params">(WmNews wmNews, String text)</span> {
+        <span class="hljs-type">boolean</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;
+        <span class="hljs-comment">// 需要审核的文本包含 标题+标签+文本内容</span>
+        text = wmNews.getTitle() + wmNews.getLabels() + text;
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-type">Map</span> <span class="hljs-variable">map</span> <span class="hljs-operator">=</span> textScan.greenTextScan(text);
+            <span class="hljs-comment">// 判断结果</span>
+            <span class="hljs-type">String</span> <span class="hljs-variable">suggestion</span> <span class="hljs-operator">=</span> (String) map.get(<span class="hljs-string">"suggestion"</span>);
+            <span class="hljs-keyword">switch</span> (suggestion) {
+                <span class="hljs-keyword">case</span> <span class="hljs-string">"pass"</span>:
+                    result = <span class="hljs-literal">true</span>;
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">case</span> <span class="hljs-string">"block"</span>:
+                    <span class="hljs-comment">// 审核不通过</span>
+                    <span class="hljs-comment">// 修改文章状态为 2</span>
+                    wmNews.setStatus(<span class="hljs-number">2</span>);
+                    <span class="hljs-comment">// 记录对应的原因</span>
+                    wmNews.setReason(<span class="hljs-string">"阿里云文本审核失败: "</span> + map.get(<span class="hljs-string">"label"</span>));
+                    newsService.updateById(wmNews);
+                    <span class="hljs-keyword">break</span>;
+                <span class="hljs-keyword">case</span> <span class="hljs-string">"review"</span>:
+                    <span class="hljs-comment">// 需要人工审核</span>
+                    <span class="hljs-comment">// 修改文章状态为 3</span>
+                    wmNews.setStatus(<span class="hljs-number">3</span>);
+                    newsService.updateById(wmNews);
+                    <span class="hljs-keyword">break</span>;
+            }
+        } <span class="hljs-keyword">catch</span> (Exception e) {
+            e.printStackTrace();
+        }
+        <span class="hljs-keyword">return</span> result;
+    }
+}
+</code></pre></div>
+<h3 id="43-文章审核功能测试">4.3 文章审核功能测试</h3>
+<p>添加测试接口 TestController</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.controller;
+
+<span class="hljs-keyword">import</span> com.heima.media.service.IAuditService;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.GetMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.PathVariable;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RequestMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-meta">@RequestMapping("/test")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TestController</span> {
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IAuditService auditService;
+
+    <span class="hljs-meta">@GetMapping("/audit/{id}")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">audit</span><span class="hljs-params">(<span class="hljs-meta">@PathVariable("id")</span> Integer id)</span> {
+        auditService.audit(id);
+        <span class="hljs-keyword">return</span> ResponseResult.okResult();
+    }
+}
+</code></pre></div>
+<p>打开knife文档工具测试</p>
+<p><img src="/_resources/8d8abc91ebd148cda52960da68870822.png" /></p>
+<h2 id="5-发布文章提交审核集成">5 发布文章提交审核集成</h2>
+<h3 id="51-同步调用与异步调用">5.1 同步调用与异步调用</h3>
+<p>同步：就是在发出一个调用时，在没有得到结果之前， 该调用就不返回（实时处理）</p>
+<p>异步：调用在发出之后，这个调用就直接返回了，没有返回结果（分时处理）</p>
+<p><img src="/_resources/8fa22116a76d484e941b9621f65c0e87.png" /></p>
+<p>异步线程的方式审核文章</p>
+<h3 id="52-springboot集成异步线程调用">5.2 Springboot集成异步线程调用</h3>
+<p>①：在自动审核的方法上加上@Async注解（标明要异步调用）</p>
+<div><pre class="hljs"><code>    <span class="hljs-meta">@Override</span>
+    <span class="hljs-meta">@Async</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">audit</span><span class="hljs-params">(Integer id)</span> </code></pre></div>
+<p>②：在文章发布成功后调用审核的方法,在WmNewsServiceImpl 中添加注入</p>
+<div><pre class="hljs"><code>    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-meta">@Lazy</span>	<span class="hljs-comment">// 解决循环依赖问题</span>
+    <span class="hljs-keyword">private</span> IAuditService auditService;</code></pre></div>
+<div><pre class="hljs"><code><span class="hljs-comment">// 需要判断是保存草稿还是提交审核</span>
+<span class="hljs-keyword">if</span> (dto.getStatus() == <span class="hljs-number">1</span>) {
+    <span class="hljs-comment">// 如果是提交审核,需要保存文章和素材的关联关系</span>
+    <span class="hljs-comment">// 包含内容图片的关联和封面图片的关联</span>
+    <span class="hljs-comment">// 保存封面图片和素材表的关联关系</span>
+    List&lt;ImageDto&gt; coverImages = JSON.parseArray(wmNews.getImages(), ImageDto.class);
+    saveRelation(coverImages, <span class="hljs-number">1</span>, wmNews.getId());
+    <span class="hljs-comment">// 保存内容图片和素材表的关联关系</span>
+    saveRelation(contentImages, <span class="hljs-number">0</span>, wmNews.getId());
+    <span class="hljs-comment">// 开始自动审核文章  需要异步处理</span>
+    System.out.println(Thread.currentThread().getName() + <span class="hljs-string">" 开始调用自动审核服务..."</span>);
+    auditService.audit(wmNews);
+}</code></pre></div>
+<p>③：在自媒体引导类中使用@EnableAsync注解开启异步调用</p>
+<div><pre class="hljs"><code><span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-meta">@EnableFeignClients</span>
+<span class="hljs-meta">@EnableAsync</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MediaApp</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        SpringApplication.run(MediaApp.class, args);
+    }
+}</code></pre></div>
+<h2 id="6-文章审核功能-综合测试">6 文章审核功能-综合测试</h2>
+<p>服务启动列表：</p>
+<p>1，nacos</p>
+<p>2，seata</p>
+<p>4，article微服务</p>
+<p>5，media微服务</p>
+<p>6，启动media网关微服务</p>
+<p>8，启动前端系统media</p>
+<p>测试动作：在自媒体前端进行发布文章</p>
+<p>结果：</p>
+<p>1，审核成功后，app端的article相关数据是否可以正常插入</p>
+<p>2，审核成功或失败后，wm_news表中的状态是否改变，成功和失败原因正常插入</p>
+<h2 id="7-新需求-自管理敏感词">7 新需求-自管理敏感词</h2>
+<h3 id="71-需求分析">7.1 需求分析</h3>
+<p>文章审核功能已经交付了，文章也能正常发布审核。突然，产品经理过来说要开会。</p>
+<p>会议的内容核心有以下内容：</p>
+<ul>
+<li>
+<p>文章审核不能过滤一些敏感词：</p>
+<p>私人侦探、针孔摄象、信用卡提现、广告代理、代开发票、刻章办、出售答案、小额贷款…</p>
+</li>
+</ul>
+<p>需要完成的功能：</p>
+<p>需要自己维护一套敏感词，在文章审核的时候，需要验证文章是否包含这些敏感词</p>
+<h3 id="72-敏感词-过滤">7.2 敏感词-过滤</h3>
+<p>技术选型</p>
+<table>
+<thead>
+<tr>
+<th><strong>方案</strong></th>
+<th><strong>说明</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据库模糊查询</td>
+<td>效率太低</td>
+</tr>
+<tr>
+<td>String.indexOf("")查找</td>
+<td>数据库量大的话也是比较慢</td>
+</tr>
+<tr>
+<td>全文检索</td>
+<td>分词再匹配</td>
+</tr>
+<tr>
+<td>DFA算法</td>
+<td>确定有穷自动机(一种数据结构)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="73-dfa实现原理">7.3 DFA实现原理</h3>
+<p>DFA全称为：Deterministic Finite Automaton,即确定有穷自动机。</p>
+<p>存储：一次性的把所有的敏感词存储到了多个map中，就是下图表示这种结构</p>
+<p>敏感词：冰毒、大麻、大坏蛋</p>
+<p><img src="/_resources/d74ba2ab95854159b1435275b4911d9a.png" /></p>
+<p>检索的过程</p>
+<p><img src="/_resources/5fd32f263cfb4cdea6da258f085e5875.png" /></p>
+<h3 id="74-自管理敏感词集成到文章审核中">7.4 自管理敏感词集成到文章审核中</h3>
+<p>表结构</p>
+<p><img src="/_resources/d59283ece51b47399b1fd0b9e67a6cbc.png" /></p>
+<p>通过代码生成器在media服务中添加敏感词功能</p>
+<p>在文章审核的代码中添加自管理敏感词审核</p>
+<div><pre class="hljs"><code>    <span class="hljs-comment">/**
+     * 审核
+     *
+     * <span class="hljs-doctag">@param</span> wmNews
+     */</span>
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-meta">@Async</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">audit</span><span class="hljs-params">(WmNews wmNews)</span> {
+        System.out.println(Thread.currentThread().getName() + <span class="hljs-string">" 开始执行自动审核服务..."</span>);
+        <span class="hljs-comment">// 判断自媒体文章的状态,如果状态为1 进入自动审核流程</span>
+        <span class="hljs-keyword">if</span> (wmNews.getStatus() == <span class="hljs-number">1</span>) {
+            <span class="hljs-comment">// 审核文本内容,调用阿里云文本审核</span>
+            <span class="hljs-comment">// 提取内容中的文本内容和图片内容</span>
+            Map&lt;String, Object&gt; map = getTextAndImagesFromContent(wmNews.getContent());
+            <span class="hljs-type">String</span> <span class="hljs-variable">text</span> <span class="hljs-operator">=</span> (String) map.get(<span class="hljs-string">"text"</span>);
+            <span class="hljs-comment">// 内容图片</span>
+            List&lt;String&gt; images = (List&lt;String&gt;) map.get(<span class="hljs-string">"images"</span>);
+
+            <span class="hljs-comment">// 先进行本地敏感词库的一个匹配</span>
+            <span class="hljs-type">boolean</span> <span class="hljs-variable">sensResult</span> <span class="hljs-operator">=</span> checkSens(wmNews, text);
+            <span class="hljs-keyword">if</span> (!sensResult) <span class="hljs-keyword">return</span>;
+            <span class="hljs-type">boolean</span> <span class="hljs-variable">textResult</span> <span class="hljs-operator">=</span> checkText(wmNews, text);
+            <span class="hljs-comment">// 审核图片内容,调用阿里云图片审核</span>
+            <span class="hljs-keyword">if</span> (!textResult) <span class="hljs-keyword">return</span>;
+            <span class="hljs-comment">// 有可能封面图片跟内容图片不一样</span>
+            List&lt;ImageDto&gt; coverImages = JSON.parseArray(wmNews.getImages(), ImageDto.class);
+            <span class="hljs-keyword">for</span> (ImageDto image : coverImages) {
+                <span class="hljs-keyword">if</span> (!images.contains(image.getUrl())) {
+                    images.add(image.getUrl());
+                }
+            }
+            <span class="hljs-type">boolean</span> <span class="hljs-variable">imageResult</span> <span class="hljs-operator">=</span> checkImage(wmNews, images);
+            <span class="hljs-comment">// 调用文章服务保存文章</span>
+            <span class="hljs-keyword">if</span> (!imageResult) <span class="hljs-keyword">return</span>;
+            saveArticle(wmNews);
+        }
+    }
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IWmSensitiveService sensitiveService;
+
+    <span class="hljs-comment">/**
+     * 本地敏感词过滤
+     *
+     * <span class="hljs-doctag">@param</span> wmNews
+     * <span class="hljs-doctag">@param</span> text
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">checkSens</span><span class="hljs-params">(WmNews wmNews, String text)</span> {
+        <span class="hljs-keyword">if</span> (SensitiveWordUtil.dictionaryMap.size() == <span class="hljs-number">0</span>) {
+            <span class="hljs-comment">// 初始化</span>
+            <span class="hljs-comment">// 查询所有的敏感词</span>
+            LambdaQueryWrapper&lt;WmSensitive&gt; query = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaQueryWrapper</span>&lt;&gt;();
+            <span class="hljs-comment">// select sensitives from wm_sensitive</span>
+            query.select(WmSensitive::getSensitives);
+            List&lt;String&gt; words = sensitiveService.listObjs(query, o -&gt; o.toString());
+            SensitiveWordUtil.initMap(words);
+        }
+        <span class="hljs-comment">// 审核标题+标签+内容</span>
+        Map&lt;String, Integer&gt; map = SensitiveWordUtil.matchWords(wmNews.getTitle() + wmNews.getLabels() + text);
+        <span class="hljs-keyword">if</span> (map.size() &gt; <span class="hljs-number">0</span>) {
+            wmNews.setStatus(<span class="hljs-number">2</span>);
+            Set&lt;String&gt; keys = map.keySet();
+            <span class="hljs-type">String</span> <span class="hljs-variable">join</span> <span class="hljs-operator">=</span> String.join(<span class="hljs-string">" "</span>, keys);
+            wmNews.setReason(<span class="hljs-string">"敏感词审核不通过: "</span> + join);
+            newsService.updateById(wmNews);
+            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+    }</code></pre></div>
+<h2 id="8-新需求-批量导入敏感词">8 新需求-批量导入敏感词</h2>
+<h3 id="81-需求分析">8.1 需求分析</h3>
+<p>产品经理召集开会，文章审核功能已经交付了，文章也能正常发布审核。对于上次提出的自管理敏感词也很满意，这次会议核心的内容如下：</p>
+<ul>
+<li>运营给了一个Excel文档,包含了最近收集的敏感词,要求导入到数据库中</li>
+</ul>
+<h3 id="82-easyexcel">8.2 EasyExcel</h3>
+<p><a title="https://www.yuque.com/easyexcel/doc/easyexcel" href="https://www.yuque.com/easyexcel/doc/easyexcel">官方网站: https://yuque.com/easyexcel</a></p>
+<p>在common中导入依赖</p>
+<div><pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.alibaba<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>easyexcel<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.0.0-beta1<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span></code></pre></div>
+<h4 id="821-读excel">8.2.1 读Excel</h4>
+<p>直接以对象的方式来读取,Excel中设置的列与对象中的字段一致即可</p>
+<p><img src="/_resources/665ed2be52b34d9d952aa7ae1494b525.png" /></p>
+<p>在TestController 中添加方法</p>
+<div><pre class="hljs"><code>    <span class="hljs-comment">/**
+     * 读取excel
+     * <span class="hljs-doctag">@param</span> file
+     * <span class="hljs-doctag">@return</span>
+     * <span class="hljs-doctag">@throws</span> IOException
+     */</span>
+    <span class="hljs-meta">@PostMapping("/read")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">readExcel</span><span class="hljs-params">(MultipartFile file)</span> <span class="hljs-keyword">throws</span> IOException {
+        <span class="hljs-comment">// 参数  1 输入流  2 使用哪个类来读取(头部定义信息) 3 读取监听器</span>
+        EasyExcel.read(file.getInputStream(), WmSensitive.class, <span class="hljs-keyword">new</span> <span class="hljs-title class_">ReadListener</span>&lt;WmSensitive&gt;() {
+            <span class="hljs-meta">@Override</span>
+            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">invoke</span><span class="hljs-params">(WmSensitive o, AnalysisContext analysisContext)</span> {
+                <span class="hljs-comment">// 读取每一行数据触发</span>
+                System.out.println(o);
+                <span class="hljs-comment">// todo 更新到数据库,判断当前敏感词是否已经存在,不存在新增</span>
+            }
+
+            <span class="hljs-meta">@Override</span>
+            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">doAfterAllAnalysed</span><span class="hljs-params">(AnalysisContext analysisContext)</span> {
+                <span class="hljs-comment">// 全部读取完成触发</span>
+                System.out.println(<span class="hljs-string">"全部处理完成"</span>);
+            }
+        }).sheet().doRead();
+        <span class="hljs-keyword">return</span> ResponseResult.okResult();
+    }</code></pre></div>
+<h4 id="822-写excel">8.2.2 写Excel</h4>
+<p>将敏感词从数据库导出到Excel</p>
+<div><pre class="hljs"><code>    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IWmSensitiveService sensitiveService;
+    <span class="hljs-comment">/**
+     * 文件下载并且失败的时候返回json（默认失败了会返回一个有部分数据的Excel）
+     *
+     * <span class="hljs-doctag">@since</span> 2.1.1
+     */</span>
+    <span class="hljs-meta">@GetMapping("downloadFailedUsingJson")</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">downloadFailedUsingJson</span><span class="hljs-params">(HttpServletResponse response)</span> <span class="hljs-keyword">throws</span> IOException {
+        <span class="hljs-comment">// 这里注意 有同学反应使用swagger 会导致各种问题，请直接用浏览器或者用postman</span>
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">1</span>/<span class="hljs-number">0</span>;
+            response.setContentType(<span class="hljs-string">"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"</span>);
+            response.setCharacterEncoding(<span class="hljs-string">"utf-8"</span>);
+            <span class="hljs-comment">// 这里URLEncoder.encode可以防止中文乱码 当然和easyexcel没有关系</span>
+            <span class="hljs-type">String</span> <span class="hljs-variable">fileName</span> <span class="hljs-operator">=</span> URLEncoder.encode(<span class="hljs-string">"测试"</span>, <span class="hljs-string">"UTF-8"</span>).replaceAll(<span class="hljs-string">"\\+"</span>, <span class="hljs-string">"%20"</span>);
+            response.setHeader(<span class="hljs-string">"Content-disposition"</span>, <span class="hljs-string">"attachment;filename*=utf-8''"</span> + fileName + <span class="hljs-string">".xlsx"</span>);
+            <span class="hljs-comment">// 这里需要设置不关闭流</span>
+            EasyExcel.write(response.getOutputStream(), WmSensitive.class).autoCloseStream(Boolean.FALSE).sheet(<span class="hljs-string">"模板"</span>)
+                    .doWrite(data());
+        } <span class="hljs-keyword">catch</span> (Exception e) {
+            <span class="hljs-comment">// 重置response</span>
+            response.reset();
+            response.setContentType(<span class="hljs-string">"application/json"</span>);
+            response.setCharacterEncoding(<span class="hljs-string">"utf-8"</span>);
+            Map&lt;String, String&gt; map = MapUtils.newHashMap();
+            map.put(<span class="hljs-string">"status"</span>, <span class="hljs-string">"failure"</span>);
+            map.put(<span class="hljs-string">"message"</span>, <span class="hljs-string">"下载文件失败"</span> + e.getMessage());
+            response.getWriter().println(JSON.toJSONString(map));
+        }
+    }
+
+    <span class="hljs-keyword">private</span> List&lt;WmSensitive&gt; <span class="hljs-title function_">data</span><span class="hljs-params">()</span> {
+        List&lt;WmSensitive&gt; list = sensitiveService.list();
+        <span class="hljs-keyword">return</span> list;
+    }</code></pre></div>
+<p>生成Excel如下</p>
+<p><img src="/_resources/b26b0988eb5847a2a02f94cbb1c30371.png" /></p>
+<p>默认使用的列名和表的列名一致,可以通过注解更改表头</p>
+<p><img src="/_resources/f42e67bf4af14d8b8c60c72d2cccbf8a.png" /></p>
+</div>
+      </article>
+    </div>
+  </body>
+</html>

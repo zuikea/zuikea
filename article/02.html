@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>02-平台管理端数据准备 - zkblog</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zkblog</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">02-平台管理端数据准备</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1649582438818"
+                  >2022-04-10 17:20</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1649744387284"
+                  >2022-04-12 14:19</time
+                ></span
+              >
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><h1 id="02-平台管理端">02 平台管理端</h1>
+<h2 id="学习目标">学习目标</h2>
+<ul>
+<li>能够掌握项目中通用异常的处理方式</li>
+<li>能够完成admin端登录功能</li>
+<li>能够完成nacos注册中心的搭建</li>
+<li>能够完成网关统一鉴权的功能</li>
+<li>能够完成用户认证审核</li>
+</ul>
+<p>上次课程总结: <a title="https://www.processon.com/view/link/6187a7d3f346fb2ecc4a9c08" href="https://www.processon.com/view/link/6187a7d3f346fb2ecc4a9c08">https://www.processon.com/view/link/6187a7d3f346fb2ecc4a9c08</a></p>
+<h2 id="1-通用异常">1 通用异常</h2>
+<h3 id="11-什么是通用异常">1.1 什么是通用异常</h3>
+<p>目前的代码中如果发生系统异常，则直接会给用户抛出不友好的异常信息。为了增加用户的体验，应该给一些适当信息进行提示。例如如下代码</p>
+<p><img src="/_resources/e3893939242645eb8aafd7ba283a8026.png" /></p>
+<p>当执行删除这一行代码，系统会抛出异常。那这个时候就会把异常信息直接返回给用户。那该如何处理呢？</p>
+<p>项目开发中肯定会设置<strong>全局异常处理</strong>，不管系统发生了任何不可知的异常信息，都应该给用户返回友好提示信息。</p>
+<p><img src="/_resources/fe2a598ad13a4f689a0dd8b5c724f587.png" /></p>
+<h3 id="12-通用异常配置">1.2 通用异常配置</h3>
+<p>在heima-leadnews-common模块中新建类BaseExceptionHandler</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.common.exception;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.enums.AppHttpCodeEnum;
+<span class="hljs-keyword">import</span> lombok.extern.slf4j.Slf4j;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.ExceptionHandler;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestControllerAdvice;
+
+<span class="hljs-meta">@Slf4j</span> <span class="hljs-comment">// 开启日志</span>
+<span class="hljs-meta">@RestControllerAdvice</span> <span class="hljs-comment">// 针对所有的RestController添加了AOP</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BaseExceptionHandler</span> {
+    <span class="hljs-comment">// 指定捕获什么类型的异常</span>
+    <span class="hljs-meta">@ExceptionHandler(value = Exception.class)</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">handleException</span><span class="hljs-params">(Exception e)</span> {
+        log.error(e.getMessage());
+        <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.SERVER_ERROR);
+    }
+}
+</code></pre></div>
+<p><img src="/_resources/8a67f7f4cfdb40f689fe2cd74a1cb9b2.png" /></p>
+<p><code>@ControllerAdvice</code>  控制器增强注解</p>
+<p><code>@ExceptionHandler</code> 异常处理器 与上面注解一起使用，可以拦截指定的异常信息</p>
+<h3 id="13-集成到项目中使用">1.3 集成到项目中使用</h3>
+<p>在heima-leadnews-media模块中扫描包</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.config;
+
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.ComponentScan;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;
+
+<span class="hljs-meta">@Configuration</span>
+<span class="hljs-meta">@ComponentScan(value = {"com.heima.common.knife4j","com.heima.common.exception"})</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InitConfig</span> {
+}
+</code></pre></div>
+<h2 id="2-平台管理端admin">2 平台管理端(admin)</h2>
+<h3 id="21-搭建微服务">2.1 搭建微服务</h3>
+<p>在heima-leadnews-service 下添加子模块 heima-leadnews-admin ,结构与media一致</p>
+<p><img src="/_resources/787b78abe014494aa491232293705d63.png" /></p>
+<p>启动类</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.admin;
+
+<span class="hljs-keyword">import</span> org.springframework.boot.SpringApplication;
+<span class="hljs-keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;
+
+<span class="hljs-comment">/**
+ * <span class="hljs-doctag">@author</span> mcm
+ */</span>
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AdminApp</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        SpringApplication.run(AdminApp.class, args);
+    }
+}
+</code></pre></div>
+<p>配置文件</p>
+<div><pre class="hljs"><code><span class="hljs-attr">server:</span>
+  <span class="hljs-attr">port:</span> <span class="hljs-number">9002</span>
+<span class="hljs-attr">spring:</span>
+  <span class="hljs-attr">application:</span>
+    <span class="hljs-attr">name:</span> <span class="hljs-string">leadnews-admin</span>
+  <span class="hljs-attr">datasource:</span>
+    <span class="hljs-attr">driver-class-name:</span> <span class="hljs-string">com.mysql.jdbc.Driver</span>
+    <span class="hljs-attr">url:</span> <span class="hljs-string">jdbc:mysql://192.168.85.143:3306/leadnews_admin?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=UTC&amp;useSSL=false</span>
+    <span class="hljs-attr">username:</span> <span class="hljs-string">root</span>
+    <span class="hljs-attr">password:</span> <span class="hljs-string">root</span>
+<span class="hljs-attr">mybatis-plus:</span>
+  <span class="hljs-attr">configuration:</span>
+    <span class="hljs-comment"># sql输出到控制台,方便开发调试</span>
+    <span class="hljs-attr">log-impl:</span> <span class="hljs-string">org.apache.ibatis.logging.stdout.StdOutImpl</span>
+</code></pre></div>
+<p>通用配置,注意@MapperScan扫描的包名与模块一致</p>
+<p><img src="/_resources/27a19efedc6141ee8f57b5cb81b73fb1.png" /></p>
+<h3 id="22-登录功能实现">2.2 登录功能实现</h3>
+<h4 id="221-表结构">2.2.1 表结构</h4>
+<p>ad_user 运营平台用户信息表</p>
+<p><img src="/_resources/170614c584bc4010a90b0badc591e539.png" /></p>
+<h4 id="222-代码生成">2.2.2 代码生成</h4>
+<p>使用资料中的mybatis-plus-code 项目生成代码</p>
+<p><img src="/_resources/aeeae1a1aef54d29897aab6a204784de.png" /></p>
+<h4 id="223-接口参数定义">2.2.3 接口参数定义</h4>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.admin.dto;
+
+<span class="hljs-keyword">import</span> lombok.Data;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">LoginDto</span> {
+
+    <span class="hljs-comment">//用户名</span>
+    <span class="hljs-keyword">private</span> String name;
+
+    <span class="hljs-comment">//密码</span>
+    <span class="hljs-keyword">private</span> String password;
+}</code></pre></div>
+<h4 id="224-接口定义">2.2.4 接口定义</h4>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.admin.controller;
+
+
+<span class="hljs-keyword">import</span> com.heima.admin.dto.LoginDto;
+<span class="hljs-keyword">import</span> com.heima.admin.service.IAdUserService;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.PostMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RequestBody;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RequestMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-meta">@RequestMapping("/login")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">LoginController</span> {
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IAdUserService userService;
+
+    <span class="hljs-comment">/**
+     * 登录
+     *
+     * <span class="hljs-doctag">@param</span> dto
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping("/in")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">login</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> LoginDto dto)</span> {
+        <span class="hljs-keyword">return</span> userService.login(dto);
+    }
+}</code></pre></div>
+<h4 id="225-业务层">2.2.5 业务层</h4>
+<p>接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IAdUserService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;AdUser&gt; {
+
+    ResponseResult <span class="hljs-title function_">login</span><span class="hljs-params">(LoginDto dto)</span>;
+}</code></pre></div>
+<p>接口实现</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.admin.service.impl;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+<span class="hljs-keyword">import</span> com.heima.admin.dto.LoginDto;
+<span class="hljs-keyword">import</span> com.heima.admin.entity.AdUser;
+<span class="hljs-keyword">import</span> com.heima.admin.mapper.AdUserMapper;
+<span class="hljs-keyword">import</span> com.heima.admin.service.IAdUserService;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.enums.AppHttpCodeEnum;
+<span class="hljs-keyword">import</span> com.heima.common.util.AppJwtUtil;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+<span class="hljs-keyword">import</span> org.springframework.util.DigestUtils;
+<span class="hljs-keyword">import</span> org.springframework.util.StringUtils;
+
+<span class="hljs-keyword">import</span> java.util.HashMap;
+<span class="hljs-keyword">import</span> java.util.Map;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 管理员用户信息表 服务实现类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2022-04-10
+ */</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AdUserServiceImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ServiceImpl</span>&lt;AdUserMapper, AdUser&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IAdUserService</span> {
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">login</span><span class="hljs-params">(LoginDto dto)</span> {
+        <span class="hljs-comment">// 判断用户名和密码是否为空</span>
+        <span class="hljs-keyword">if</span> (dto == <span class="hljs-literal">null</span> || StringUtils.isEmpty(dto.getName()) || StringUtils.isEmpty(dto.getPassword())) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        <span class="hljs-comment">// 根据用户名查询用户</span>
+        LambdaQueryWrapper&lt;AdUser&gt; query = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaQueryWrapper</span>&lt;&gt;();
+        query.eq(AdUser::getName, dto.getName());
+        <span class="hljs-type">AdUser</span> <span class="hljs-variable">one</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">this</span>.getOne(query);
+        <span class="hljs-comment">// 不存在提示用户不存在</span>
+        <span class="hljs-keyword">if</span> (one == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+        <span class="hljs-comment">// 存在的话,取出用户数据库中的salt</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">salt</span> <span class="hljs-operator">=</span> one.getSalt();
+        <span class="hljs-comment">// 使用用户传入的密码+salt 进行md5 加密</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">pwd</span> <span class="hljs-operator">=</span> dto.getPassword() + salt;
+        <span class="hljs-type">String</span> <span class="hljs-variable">md5</span> <span class="hljs-operator">=</span> DigestUtils.md5DigestAsHex(pwd.getBytes());
+        <span class="hljs-comment">// 对比数据库中存储的密码</span>
+        <span class="hljs-comment">// 密码不一致,提示密码错误</span>
+        <span class="hljs-keyword">if</span> (!md5.equals(one.getPassword())) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.LOGIN_PASSWORD_ERROR);
+        }
+        <span class="hljs-comment">// 密码一致,使用jwt生成token</span>
+        Map&lt;String, Object&gt; userInfo = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();
+        userInfo.put(<span class="hljs-string">"userId"</span>, one.getId());
+        <span class="hljs-type">String</span> <span class="hljs-variable">token</span> <span class="hljs-operator">=</span> AppJwtUtil.getToken(userInfo);
+        <span class="hljs-comment">// 给前端返回对应格式的数据</span>
+        <span class="hljs-type">AdUser</span> <span class="hljs-variable">user</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">AdUser</span>();
+        user.setName(one.getName());
+        Map&lt;String, Object&gt; map = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();
+        map.put(<span class="hljs-string">"user"</span>, user);
+        map.put(<span class="hljs-string">"token"</span>, token);
+        <span class="hljs-keyword">return</span> ResponseResult.okResult(map);
+    }
+}
+</code></pre></div>
+<h4 id="226-测试">2.2.6 测试</h4>
+<p>打开 <a title="http://localhost:9002/doc.html" href="http://localhost:9002/doc.html">http://localhost:9002/doc.html</a></p>
+<p><img src="/_resources/80c60181f4c34a13ac47300d4e0472d3.png" /></p>
+<h2 id="3-nacos注册中心">3 nacos注册中心</h2>
+<h3 id="31-简介">3.1 简介</h3>
+<p>Nacos是阿里的一个开源产品，它是针对微服务架构中的服务发现、配置管理、服务治理的综合型解决方案。
+官方介绍是这样的：</p>
+<blockquote>
+<p>Nacos  致力于帮助您发现、配置和管理微服务。Nacos 提供了一组简单易用的特性集，帮助您实现动态服务
+发现、服务配置管理、服务及流量管理。 Nacos 帮助您更敏捷和容易地构建、交付和管理微服务平台。
+Nacos 是构建以“服务”为中心的现代应用架构的服务基础设施。</p>
+</blockquote>
+<p>官网地址：<a title="https://nacos.io" href="https://nacos.io">https://nacos.io</a></p>
+<p>官方文档：<a title="https://nacos.io/zh-cn/docs/what-is-nacos.html" href="https://nacos.io/zh-cn/docs/what-is-nacos.html">https://nacos.io/zh-cn/docs/what-is-nacos.html</a></p>
+<p>Nacos主要提供以下四大功能：</p>
+<ol>
+<li>服务发现与服务健康检查
+Nacos使服务更容易注册，并通过DNS或HTTP接口发现其他服务，Nacos还提供服务的实时健康检查，以防
+止向不健康的主机或服务实例发送请求。</li>
+<li>动态配置管理
+动态配置服务允许您在所有环境中以集中和动态的方式管理所有服务的配置。Nacos消除了在更新配置时重新
+部署应用程序，这使配置的更改更加高效和灵活。</li>
+<li>动态DNS服务
+Nacos提供基于DNS 协议的服务发现能力，旨在支持异构语言的服务发现，支持将注册在Nacos上的服务以
+域名的方式暴露端点，让三方应用方便的查阅及发现。</li>
+<li>服务和元数据管理
+Nacos 能让您从微服务平台建设的视角管理数据中心的所有服务及元数据，包括管理服务的描述、生命周
+期、服务的静态依赖分析、服务的健康状态、服务的流量管理、路由及安全策略。</li>
+</ol>
+<h3 id="32-安装nacos-server">3.2 安装Nacos Server</h3>
+<p>docker-compose方式参考day01/资料/docker</p>
+<div><pre class="hljs"><code>cd /opt/hmtt/alibaba
+./start.sh</code></pre></div>
+<h3 id="33-注册服务">3.3 注册服务</h3>
+<p>在heima-leadnews-service中加入依赖</p>
+<div><pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.alibaba.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-alibaba-nacos-discovery<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span></code></pre></div>
+<p>在admin和media微服务中的application.yml文件中加入配置</p>
+<div><pre class="hljs"><code><span class="hljs-attr">spring:</span>
+  <span class="hljs-attr">cloud:</span>
+    <span class="hljs-attr">nacos:</span>
+      <span class="hljs-attr">discovery:</span>
+        <span class="hljs-attr">server-addr:</span> <span class="hljs-number">192.168</span><span class="hljs-number">.85</span><span class="hljs-number">.143</span><span class="hljs-string">:8848</span></code></pre></div>
+<p>启动nacos,启动admin和media微服务</p>
+<p>打开nacos地址,可以查看到服务注册到nacos上了</p>
+<p><img src="/_resources/cc437e87f29e49a2a26ad30e8daaaad4.png" /></p>
+<h2 id="4-网关校验jwt">4 网关校验jwt</h2>
+<h3 id="41-微服务网关概述">4.1 微服务网关概述</h3>
+<p>不同的微服务一般会有不同的网络地址，而外部客户端可能需要调用多个服务的接口才能完成一个业务需求，如果让客户端直接与各个微服务通信，会有以下的问题：</p>
+<ul>
+<li>客户端会多次请求不同的微服务，增加了客户端的复杂性</li>
+<li>存在跨域请求，在一定场景下处理相对复杂</li>
+<li>认证复杂，每个服务都需要独立认证</li>
+<li>难以重构，随着项目的迭代，可能需要重新划分微服务。例如，可能将多个服务合并成一个或者将一个服务拆分成多个。如果客户端直接与微服务通信，那么重构将会很难实施</li>
+<li>某些微服务可能使用了防火墙 / 浏览器不友好的协议，直接访问会有一定的困难</li>
+</ul>
+<p>以上这些问题可以借助网关解决。</p>
+<p>网关是介于客户端和服务器端之间的中间层，所有的外部请求都会先经过 网关这一层。也就是说，API 的实现方面更多的考虑业务逻辑，而安全、性能、监控可以交由 网关来做，这样既提高业务灵活性又不缺安全性，典型的架构图如图所示：</p>
+<p><img src="/_resources/f77c1e95f0b24574aee2b4703123421a.png" /></p>
+<p>优点如下：</p>
+<ul>
+<li>安全 ，只有网关系统对外进行暴露，微服务可以隐藏在内网，通过防火墙保护。</li>
+<li>易于监控。可以在网关收集监控数据并将其推送到外部系统进行分析。</li>
+<li>易于认证。可以在网关上进行认证，然后再将请求转发到后端的微服务，而无须在每个微服务中进行认证。</li>
+<li>减少了客户端与各个微服务之间的交互次数</li>
+<li>易于统一授权。</li>
+</ul>
+<p>总结：微服务网关就是一个系统，通过暴露该微服务网关系统，方便我们进行相关的鉴权，安全控制，日志统一处理，易于监控的相关功能。</p>
+<p>实现微服务网关的技术有很多，</p>
+<ul>
+<li>nginx  Nginx (engine x) 是一个高性能的<a title="https://baike.baidu.com/item/HTTP" href="https://baike.baidu.com/item/HTTP">HTTP</a>和<a title="https://baike.baidu.com/item/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/7793488" href="https://baike.baidu.com/item/%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86/7793488">反向代理</a>web服务器，同时也提供了IMAP/POP3/SMTP服务</li>
+<li>zuul ,Zuul 是 Netflix 出品的一个基于 JVM 路由和服务端的负载均衡器。</li>
+<li>spring-cloud-gateway, 是spring 出品的 基于spring 的网关项目，集成断路器，路径重写，性能比Zuul好。</li>
+</ul>
+<p>我们使用gateway这个网关技术，无缝衔接到基于spring cloud的微服务开发中来。</p>
+<p>gateway官网：</p>
+<p><a title="https://spring.io/projects/spring-cloud-gateway" href="https://spring.io/projects/spring-cloud-gateway">https://spring.io/projects/spring-cloud-gateway</a></p>
+<h3 id="42-搭建网关微服务">4.2 搭建网关微服务</h3>
+<p>（1）创建 heima-leadnews-gateway 微服务</p>
+<p>pom文件</p>
+<div><pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-gateway<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.alibaba.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-alibaba-nacos-discovery<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>io.jsonwebtoken<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>jjwt<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span></code></pre></div>
+<p>添加子模块<code>heima-leadnews-admin-gateway</code></p>
+<p><img src="/_resources/6b67b1ef56bc4258a9afd4f31a77c6b0.png" /></p>
+<p>引导类：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.gateway;
+
+<span class="hljs-keyword">import</span> org.springframework.boot.SpringApplication;
+<span class="hljs-keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;
+<span class="hljs-keyword">import</span> org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AdminGateway</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        SpringApplication.run(AdminGateway.class, args);
+    }
+}
+</code></pre></div>
+<p>网关允许跨域配置</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.gateway.config;
+
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Bean;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;
+<span class="hljs-keyword">import</span> org.springframework.web.cors.CorsConfiguration;
+<span class="hljs-keyword">import</span> org.springframework.web.cors.reactive.CorsWebFilter;
+<span class="hljs-keyword">import</span> org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
+<span class="hljs-keyword">import</span> org.springframework.web.util.pattern.PathPatternParser;
+
+<span class="hljs-meta">@Configuration</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CorsConfig</span> {
+
+    <span class="hljs-meta">@Bean</span>
+    <span class="hljs-keyword">public</span> CorsWebFilter <span class="hljs-title function_">corsWebFilter</span><span class="hljs-params">()</span>{
+        <span class="hljs-type">CorsConfiguration</span> <span class="hljs-variable">config</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">CorsConfiguration</span>();
+        config.addAllowedOrigin(<span class="hljs-string">"*"</span>);
+        config.addAllowedMethod(<span class="hljs-string">"*"</span>);
+        config.addAllowedHeader(<span class="hljs-string">"*"</span>);
+
+        <span class="hljs-type">UrlBasedCorsConfigurationSource</span> <span class="hljs-variable">source</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">UrlBasedCorsConfigurationSource</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">PathPatternParser</span>());
+        source.registerCorsConfiguration(<span class="hljs-string">"/**"</span>,config);
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">CorsWebFilter</span>(source);
+    }
+}
+</code></pre></div>
+<p>application.yml</p>
+<div><pre class="hljs"><code><span class="hljs-attr">server:</span>
+  <span class="hljs-attr">port:</span> <span class="hljs-number">6001</span>
+<span class="hljs-attr">spring:</span>
+  <span class="hljs-attr">application:</span>
+    <span class="hljs-attr">name:</span> <span class="hljs-string">leadnews-admin-gateway</span>
+  <span class="hljs-attr">cloud:</span>
+    <span class="hljs-attr">nacos:</span>
+      <span class="hljs-attr">discovery:</span>
+        <span class="hljs-attr">server-addr:</span> <span class="hljs-number">192.168</span><span class="hljs-number">.85</span><span class="hljs-number">.143</span><span class="hljs-string">:8848</span>
+    <span class="hljs-attr">gateway:</span>
+      <span class="hljs-attr">globalcors:</span>
+        <span class="hljs-attr">cors-configurations:</span>
+          <span class="hljs-string">'[/**]'</span><span class="hljs-string">:</span> <span class="hljs-comment"># 匹配所有请求</span>
+            <span class="hljs-attr">allowedOrigins:</span> <span class="hljs-string">"*"</span> <span class="hljs-comment">#跨域处理 允许所有的域</span>
+            <span class="hljs-attr">allowedMethods:</span> <span class="hljs-comment"># 支持的方法</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">GET</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">POST</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">PUT</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">DELETE</span>
+      <span class="hljs-attr">routes:</span>
+      <span class="hljs-comment"># 平台管理</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">admin</span>
+        <span class="hljs-attr">uri:</span> <span class="hljs-string">lb://leadnews-admin</span>
+        <span class="hljs-attr">predicates:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">Path=/admin/**</span>
+        <span class="hljs-attr">filters:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">StripPrefix=</span> <span class="hljs-number">1</span>
+      <span class="hljs-comment"># 自媒体微服务</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">media</span>
+        <span class="hljs-attr">uri:</span> <span class="hljs-string">lb://leadnews-media</span>
+        <span class="hljs-attr">predicates:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">Path=/media/**</span>
+        <span class="hljs-attr">filters:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">StripPrefix=</span> <span class="hljs-number">1</span>
+</code></pre></div>
+<p>通过网关调用登录接口</p>
+<p><img src="/_resources/06998ef259ea49fb81ee29f00538f26e.png" /></p>
+<h3 id="43-全局过滤器实现jwt校验">4.3 全局过滤器实现jwt校验</h3>
+<p><img src="/_resources/b95e2f61354a4d698629ea895dc8f7be.png" /></p>
+<p>思路分析：</p>
+<ol>
+<li>用户进入网关开始登陆，网关过滤器进行判断，如果是登录，则路由到后台管理微服务进行登录</li>
+<li>用户登录成功，后台管理微服务签发JWT TOKEN信息返回给用户</li>
+<li>用户再次进入网关开始访问，网关过滤器接收用户携带的TOKEN</li>
+<li>网关过滤器解析TOKEN ，判断是否有权限，如果有，则放行，如果没有则返回未认证错误</li>
+</ol>
+<p>在网关微服务中新建全局过滤器：</p>
+<p>第一步，准备工具类</p>
+<p>把heima-leadnews-common模块中的AppJwtUtil类拷贝到网关模块下，如下图：</p>
+<p><img src="/_resources/a75a707714224e328fe7c45a654e432d.png" /></p>
+<p>第二步，编写全局过滤器</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.gateway.filter;
+
+<span class="hljs-keyword">import</span> com.heima.gateway.util.AppJwtUtil;
+<span class="hljs-keyword">import</span> io.jsonwebtoken.Claims;
+<span class="hljs-keyword">import</span> lombok.extern.slf4j.Slf4j;
+<span class="hljs-keyword">import</span> org.springframework.cloud.gateway.filter.GatewayFilterChain;
+<span class="hljs-keyword">import</span> org.springframework.cloud.gateway.filter.GlobalFilter;
+<span class="hljs-keyword">import</span> org.springframework.core.Ordered;
+<span class="hljs-keyword">import</span> org.springframework.http.HttpStatus;
+<span class="hljs-keyword">import</span> org.springframework.http.server.reactive.ServerHttpRequest;
+<span class="hljs-keyword">import</span> org.springframework.http.server.reactive.ServerHttpResponse;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+<span class="hljs-keyword">import</span> org.springframework.util.StringUtils;
+<span class="hljs-keyword">import</span> org.springframework.web.server.ServerWebExchange;
+<span class="hljs-keyword">import</span> reactor.core.publisher.Mono;
+
+<span class="hljs-meta">@Service</span>
+<span class="hljs-meta">@Slf4j</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AuthFilter</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">GlobalFilter</span>, Ordered {
+    <span class="hljs-comment">/**
+     * 过滤器执行的逻辑
+     *
+     * <span class="hljs-doctag">@param</span> exchange
+     * <span class="hljs-doctag">@param</span> chain
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> Mono&lt;Void&gt; <span class="hljs-title function_">filter</span><span class="hljs-params">(ServerWebExchange exchange, GatewayFilterChain chain)</span> {
+        <span class="hljs-comment">// 获取请求对象和响应对象</span>
+        <span class="hljs-type">ServerHttpRequest</span> <span class="hljs-variable">request</span> <span class="hljs-operator">=</span> exchange.getRequest();
+        <span class="hljs-type">ServerHttpResponse</span> <span class="hljs-variable">response</span> <span class="hljs-operator">=</span> exchange.getResponse();
+        <span class="hljs-comment">// 获取请求路径</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">path</span> <span class="hljs-operator">=</span> request.getURI().getPath();
+        <span class="hljs-comment">// 判断请求路径是否需要鉴权,这里判断路径中是否包含"/login"</span>
+        <span class="hljs-comment">// 如果包含,直接放行</span>
+        <span class="hljs-keyword">if</span> (path.contains(<span class="hljs-string">"/login"</span>)) {
+            <span class="hljs-keyword">return</span> chain.filter(exchange);
+        }
+        <span class="hljs-comment">// 否则判断请求头中是否携带token</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">token</span> <span class="hljs-operator">=</span> request.getHeaders().getFirst(<span class="hljs-string">"token"</span>);
+        <span class="hljs-comment">// 有token,使用jwt工具解析token</span>
+        <span class="hljs-keyword">if</span> (!StringUtils.isEmpty(token)) {
+            <span class="hljs-keyword">try</span> {
+                <span class="hljs-comment">// 解析成功</span>
+                <span class="hljs-type">Claims</span> <span class="hljs-variable">claimsBody</span> <span class="hljs-operator">=</span> AppJwtUtil.getClaimsBody(token);
+                <span class="hljs-comment">// 判断token是否有效(过期时间)</span>
+                <span class="hljs-type">int</span> <span class="hljs-variable">status</span> <span class="hljs-operator">=</span> AppJwtUtil.verifyToken(claimsBody);
+                <span class="hljs-keyword">if</span> (status == -<span class="hljs-number">1</span> || status == <span class="hljs-number">0</span>) {
+                    <span class="hljs-comment">// 有效的话,从token的自定义信息中获取userId,放入到请求头中转发给后端的微服务</span>
+                    <span class="hljs-type">Object</span> <span class="hljs-variable">userId</span> <span class="hljs-operator">=</span> claimsBody.get(<span class="hljs-string">"userId"</span>);
+                    request.mutate().header(<span class="hljs-string">"userId"</span>, userId.toString());
+                    <span class="hljs-comment">// 转发给后端的微服务</span>
+                    <span class="hljs-keyword">return</span> chain.filter(exchange);
+                }
+            } <span class="hljs-keyword">catch</span> (Exception e) {
+                <span class="hljs-comment">// 记录异常日志</span>
+                log.error(e.getMessage());
+            }
+        }
+
+        <span class="hljs-comment">// 解析失败</span>
+        <span class="hljs-comment">// 没有token返回401 未授权状态</span>
+        response.setStatusCode(HttpStatus.UNAUTHORIZED);
+        <span class="hljs-keyword">return</span> response.setComplete();
+    }
+
+    <span class="hljs-comment">/**
+     * 过滤器执行的顺序,数值越小,优先级越高
+     *
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getOrder</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+    }
+}
+</code></pre></div>
+<p>测试：</p>
+<p>启动admin服务，继续访问其他微服务，会提示需要认证才能访问，这个时候需要在heads中设置设置token才能正常访问。</p>
+<p><img src="/_resources/12d100cde3d34769a677be751e64ac33.png" /></p>
+<h2 id="5-admin前端项目">5 admin前端项目</h2>
+<h3 id="51-nodejs必须安装">5.1 NodeJS(必须安装)</h3>
+<p><a title="http://nodejs.cn/download/" href="http://nodejs.cn/download/">http://nodejs.cn/download/</a></p>
+<p><img src="/_resources/8d6c30c5252e45a398daf8d212665e77.png" /></p>
+<p>安装包在资料中</p>
+<p><img src="/_resources/0ca24fbf993c4abcac3c6c16acf400aa.png" /></p>
+<p><strong>安装前关闭所有控制台窗口和IDEA窗口</strong></p>
+<p>双击安装即可(最好使用默认位置安装)</p>
+<p>验证NPM成功安装</p>
+<div><pre class="hljs"><code>npm -v</code></pre></div>
+<h3 id="53-导入admin前端工程">5.3 导入admin前端工程</h3>
+<p>使用idea工具打开资料中前端项目</p>
+<p><img src="/_resources/0a27f57d5d064bdfa0e2c0f470516f4e.png" /></p>
+<p>（1）安装js依赖，<strong>保证有网络</strong>，在项目的根目录执行命令</p>
+<div><pre class="hljs"><code>npm install</code></pre></div>
+<p>注意: <strong>执行该命令之前先关闭所有的IDEA窗口再重新打开,如果还不行,建议重启电脑</strong></p>
+<p><img src="/_resources/fdf27670e3814553828e8c82c485a96a.png" /></p>
+<p>(2) 双击<code>package.json</code>打开文件,点击箭头运行项目</p>
+<p><img src="/_resources/0cd43e2131cd43ac82ac279fc9b0284d.png" /></p>
+<p>正常启动日志</p>
+<p><img src="/_resources/dc24f0834851498a8f9173ee72201583.png" /></p>
+<p>如果出现其他错误提示,执行下面代码</p>
+<div><pre class="hljs"><code>npm rebuild node-sass</code></pre></div>
+<p>（3）用浏览器打开，可以测试已开发好的频道功能</p>
+<p><img src="/_resources/d35f425b7b694710886477bf2a13ed35.png" /></p>
+<h2 id="6-app端用户认证列表">6 app端用户认证列表</h2>
+<p>App用户在登录后可以进行实名认证,流程参考原型.</p>
+<h3 id="61-需求分析">6.1 需求分析</h3>
+<p><img src="/_resources/3d2eb9885015427fa246f72b47a08e2f.png" /></p>
+<h3 id="62-搭建user微服务">6.2 搭建user微服务</h3>
+<p>（1）新建模块：heima-leadnews-user</p>
+<ul>
+<li>
+<p>pom文件引入，参考admin微服务</p>
+</li>
+<li>
+<p>定义包名</p>
+</li>
+<li>
+<p>新建引导类  参考admin微服务创建</p>
+</li>
+</ul>
+<div><pre class="hljs"><code>    <span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>mysql<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>mysql-connector-java<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.baomidou<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>mybatis-plus-boot-starter<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span></code></pre></div>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.user;
+
+<span class="hljs-keyword">import</span> org.springframework.boot.SpringApplication;
+<span class="hljs-keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;
+
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">UserApp</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        SpringApplication.run(UserApp.class, args);
+    }
+}</code></pre></div>
+<p>（2）在resources下新建application.yml</p>
+<div><pre class="hljs"><code><span class="hljs-attr">server:</span>
+  <span class="hljs-attr">port:</span> <span class="hljs-number">9003</span>
+<span class="hljs-attr">spring:</span>
+  <span class="hljs-attr">application:</span>
+    <span class="hljs-attr">name:</span> <span class="hljs-string">leadnews-user</span>
+  <span class="hljs-attr">datasource:</span>
+    <span class="hljs-attr">driver-class-name:</span> <span class="hljs-string">com.mysql.jdbc.Driver</span>
+    <span class="hljs-attr">url:</span> <span class="hljs-string">jdbc:mysql://192.168.85.143:3306/leadnews_user?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=UTC&amp;useSSL=false</span>
+    <span class="hljs-attr">username:</span> <span class="hljs-string">root</span>
+    <span class="hljs-attr">password:</span> <span class="hljs-string">root</span>
+  <span class="hljs-attr">cloud:</span>
+    <span class="hljs-attr">nacos:</span>
+      <span class="hljs-attr">discovery:</span>
+        <span class="hljs-attr">server-addr:</span> <span class="hljs-number">192.168</span><span class="hljs-number">.85</span><span class="hljs-number">.143</span><span class="hljs-string">:8848</span>
+<span class="hljs-attr">mybatis-plus:</span>
+  <span class="hljs-attr">configuration:</span>
+    <span class="hljs-comment"># sql输出到控制台,方便开发调试</span>
+    <span class="hljs-attr">log-impl:</span> <span class="hljs-string">org.apache.ibatis.logging.stdout.StdOutImpl</span>
+</code></pre></div>
+<p>(3) 在user服务中添加配置扫描即可</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.user.config;
+
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.ComponentScan;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;
+
+<span class="hljs-meta">@Configuration</span>
+<span class="hljs-meta">@ComponentScan({"com.heima.common.exception","com.heima.common.knife4j"})</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InitConfig</span> {
+}</code></pre></div>
+<p>MybatisConfig 也复制过来,修改下扫描包名</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.user.config;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
+<span class="hljs-keyword">import</span> org.mybatis.spring.annotation.MapperScan;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Bean;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;
+
+<span class="hljs-meta">@Configuration</span>
+<span class="hljs-meta">@MapperScan("com.heima.user.mapper")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MybatisConfig</span> {
+    <span class="hljs-meta">@Bean</span>
+    <span class="hljs-keyword">public</span> PaginationInterceptor <span class="hljs-title function_">paginationInterceptor</span><span class="hljs-params">()</span>{
+        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PaginationInterceptor</span>();
+    }
+}</code></pre></div>
+<p>(4) 在admin网关中添加路由配置</p>
+<div><pre class="hljs"><code><span class="hljs-attr">server:</span>
+  <span class="hljs-attr">port:</span> <span class="hljs-number">6001</span>
+<span class="hljs-attr">spring:</span>
+  <span class="hljs-attr">application:</span>
+    <span class="hljs-attr">name:</span> <span class="hljs-string">leadnews-admin-gateway</span>
+  <span class="hljs-attr">cloud:</span>
+    <span class="hljs-attr">nacos:</span>
+      <span class="hljs-attr">discovery:</span>
+        <span class="hljs-attr">server-addr:</span> <span class="hljs-number">192.168</span><span class="hljs-number">.85</span><span class="hljs-number">.143</span><span class="hljs-string">:8848</span>
+    <span class="hljs-attr">gateway:</span>
+      <span class="hljs-attr">globalcors:</span>
+        <span class="hljs-attr">cors-configurations:</span>
+          <span class="hljs-string">'[/**]'</span><span class="hljs-string">:</span> <span class="hljs-comment"># 匹配所有请求</span>
+            <span class="hljs-attr">allowedOrigins:</span> <span class="hljs-string">"*"</span> <span class="hljs-comment">#跨域处理 允许所有的域</span>
+            <span class="hljs-attr">allowedMethods:</span> <span class="hljs-comment"># 支持的方法</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">GET</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">POST</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">PUT</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">DELETE</span>
+      <span class="hljs-attr">routes:</span>
+      <span class="hljs-comment"># 平台管理</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">admin</span>
+        <span class="hljs-attr">uri:</span> <span class="hljs-string">lb://leadnews-admin</span>
+        <span class="hljs-attr">predicates:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">Path=/admin/**</span>
+        <span class="hljs-attr">filters:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">StripPrefix=</span> <span class="hljs-number">1</span>
+      <span class="hljs-comment"># 自媒体微服务</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">media</span>
+        <span class="hljs-attr">uri:</span> <span class="hljs-string">lb://leadnews-media</span>
+        <span class="hljs-attr">predicates:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">Path=/media/**</span>
+        <span class="hljs-attr">filters:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">StripPrefix=</span> <span class="hljs-number">1</span>
+      <span class="hljs-comment"># 用户微服务</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">user</span>
+        <span class="hljs-attr">uri:</span> <span class="hljs-string">lb://leadnews-user</span>
+        <span class="hljs-attr">predicates:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">Path=/user/**</span>
+        <span class="hljs-attr">filters:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">StripPrefix=</span> <span class="hljs-number">1</span>
+</code></pre></div>
+<h3 id="63-表结构">6.3 表结构</h3>
+<p>当用户在app前端进行了认证请求会往ap_user_realname表中加入数据，目前所查询的就是用户认证列表</p>
+<p>ap_user_realname</p>
+<p><img src="/_resources/bc93e43e18d9418d811928422508d3a9.png" /></p>
+<p>使用代码生成器生成对应代码</p>
+<h3 id="64-接口定义">6.4 接口定义</h3>
+<ul>
+<li>按照状态查询用户认证列表</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.user.controller;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.toolkit.StringUtils;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.user.dto.AuthDto;
+<span class="hljs-keyword">import</span> io.swagger.annotations.Api;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiOperation;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParam;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParams;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.*;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.metadata.IPage;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+<span class="hljs-keyword">import</span> com.heima.user.service.IApUserRealnameService;
+<span class="hljs-keyword">import</span> java.util.List;
+<span class="hljs-keyword">import</span> java.util.Map;
+
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * APP实名认证信息表 前端控制器
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-11-02
+ */</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-meta">@RequestMapping("/api/v1/user_realname")</span>
+<span class="hljs-meta">@Api(tags = "APP实名认证信息表接口")</span>
+<span class="hljs-meta">@CrossOrigin</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ApUserRealnameController</span>{
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IApUserRealnameService apUserRealnameService;
+
+    <span class="hljs-comment">/**
+     * 按照状态查询用户认证列表
+     * <span class="hljs-doctag">@param</span> dto
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping("/list")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">listByStatus</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> AuthDto dto)</span>{
+        <span class="hljs-keyword">return</span> apUserRealnameService.listByStatus(dto);
+    }
+
+}
+</code></pre></div>
+<p>AuthDto</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.user.dto;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.PageRequestDto;
+<span class="hljs-keyword">import</span> lombok.Data;
+<span class="hljs-keyword">import</span> lombok.EqualsAndHashCode;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-meta">@EqualsAndHashCode(callSuper = true)</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AuthDto</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">PageRequestDto</span> {
+    <span class="hljs-comment">/**
+     * 状态
+     */</span>
+    <span class="hljs-keyword">private</span> Integer status;
+}</code></pre></div>
+<h3 id="65-业务层">6.5 业务层</h3>
+<p>业务层接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IApUserRealnameService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;ApUserRealname&gt; {
+
+    ResponseResult <span class="hljs-title function_">listByStatus</span><span class="hljs-params">(AuthDto dto)</span>;
+}</code></pre></div>
+<p>实现类：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.user.service.impl;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.metadata.IPage;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+<span class="hljs-keyword">import</span> com.heima.common.dto.PageResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.user.dto.AuthDto;
+<span class="hljs-keyword">import</span> com.heima.user.entity.ApUserRealname;
+<span class="hljs-keyword">import</span> com.heima.user.mapper.ApUserRealnameMapper;
+<span class="hljs-keyword">import</span> com.heima.user.service.IApUserRealnameService;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * APP实名认证信息表 服务实现类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-11-02
+ */</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ApUserRealnameServiceImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ServiceImpl</span>&lt;ApUserRealnameMapper, ApUserRealname&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IApUserRealnameService</span> {
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">listByStatus</span><span class="hljs-params">(AuthDto dto)</span> {
+        <span class="hljs-comment">// 进行分页查询</span>
+        <span class="hljs-comment">// 构建分页条件</span>
+        IPage&lt;ApUserRealname&gt; page = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Page</span>&lt;&gt;(dto.getPage(), dto.getSize());
+        <span class="hljs-comment">// 构建查询条件</span>
+        LambdaQueryWrapper&lt;ApUserRealname&gt; query = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaQueryWrapper</span>&lt;&gt;();
+        <span class="hljs-comment">// 根据状态进行查询</span>
+        <span class="hljs-keyword">if</span> (dto.getStatus() != <span class="hljs-literal">null</span>) {
+            query.eq(ApUserRealname::getStatus, dto.getStatus());
+        }
+        IPage&lt;ApUserRealname&gt; iPage = <span class="hljs-built_in">this</span>.page(page, query);
+        <span class="hljs-comment">// 构建通用的分页响应</span>
+        <span class="hljs-type">PageResponseResult</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PageResponseResult</span>(dto.getPage(), dto.getSize(),
+                iPage.getTotal(), iPage.getRecords());
+        <span class="hljs-keyword">return</span> result;
+    }
+}
+</code></pre></div>
+<h3 id="66-测试">6.6 测试</h3>
+<p>打开前端工程整合测试</p>
+<p>启动admin和user服务</p>
+<p><img src="/_resources/56cabb00e4204bd5943d974917623a48.png" /></p>
+<h2 id="7-app端用户认证审核">7 app端用户认证审核</h2>
+<h3 id="71-需求分析">7.1 需求分析</h3>
+<p><img src="/_resources/9960f5df665044c7bb01449d773719fd.png" /></p>
+<p>流程说明</p>
+<p><img src="/_resources/19e833ac8810423db00456f67e889d9a.png" /></p>
+<ul>
+<li>在app端的个人中心用户可以实名认证，需要材料为：姓名、身份证号、身份证正面照、身份证反面照、手持照片、活体照片（通过<strong>微笑、眨眼、张嘴、摇头、点头</strong>等组合动作，确保操作的为真实活体人脸。），当用户提交审核后就到了后端让运营管理人员进行审核</li>
+<li>平台运营端查看用户认证信息，进行审核，其中审核包括了用户身份审核，需要对接公安系统校验身份证信息</li>
+<li>用户通过审核后需要开通自媒体账号（该账号的用户名和密码与app一致）</li>
+<li>用户通过审核后需要在article库的作者表中添加作者信息</li>
+<li>审核通过后更新ap_user中的flag为自媒体人</li>
+</ul>
+<h3 id="72-自媒体用户保存">7.2 自媒体用户保存</h3>
+<h4 id="721-表结构">7.2.1 表结构</h4>
+<p>wm_user 自媒体用户表</p>
+<p><img src="/_resources/ee515f92cb6245d095b91b2a1c23f3a6.png" /></p>
+<p>生成实体类、mapper、service</p>
+<h4 id="722-接口实现">7.2.2 接口实现</h4>
+<p>接口定义</p>
+<ul>
+<li>保存自媒体用户</li>
+<li>更新自媒体用户</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.controller;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.toolkit.StringUtils;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmUser;
+<span class="hljs-keyword">import</span> io.swagger.annotations.Api;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiOperation;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParam;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParams;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.*;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.metadata.IPage;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+<span class="hljs-keyword">import</span> com.heima.media.service.IWmUserService;
+
+<span class="hljs-keyword">import</span> java.util.List;
+<span class="hljs-keyword">import</span> java.util.Map;
+
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体用户信息表 前端控制器
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-08-25
+ */</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-meta">@RequestMapping("/api/v1/user")</span>
+<span class="hljs-meta">@Api(tags = "自媒体用户信息表接口")</span>
+<span class="hljs-meta">@CrossOrigin</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WmUserController</span> {
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IWmUserService wmUserService;
+
+    <span class="hljs-comment">/**
+     * 保存自媒体用户
+     *
+     * <span class="hljs-doctag">@param</span> user
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;WmUser&gt; <span class="hljs-title function_">saveWmUser</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> WmUser user)</span> {
+        <span class="hljs-keyword">return</span> wmUserService.saveWmUser(user);
+    }
+
+    <span class="hljs-comment">/**
+     * 更新自媒体用户
+     * <span class="hljs-doctag">@param</span> user
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PutMapping</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">updateWmUser</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> WmUser user)</span> {
+        <span class="hljs-comment">// 没有复杂逻辑,代码可以写在controller层</span>
+        wmUserService.updateById(user);
+        <span class="hljs-keyword">return</span> ResponseResult.okResult();
+    }
+
+}
+</code></pre></div>
+<p>业务层接口：com.heima.media.service.WmUserService</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.wemedia.service;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.wemedia.entity.WmUser;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.IService;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体用户信息表 服务类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-07-13
+ */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IWmUserService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;WmUser&gt; {
+
+    ResponseResult&lt;WmUser&gt; <span class="hljs-title function_">saveWmUser</span><span class="hljs-params">(WmUser user)</span>;
+}
+</code></pre></div>
+<p>实现类：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.service.impl;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.enums.AppHttpCodeEnum;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmUser;
+<span class="hljs-keyword">import</span> com.heima.media.mapper.WmUserMapper;
+<span class="hljs-keyword">import</span> com.heima.media.service.IWmUserService;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+
+<span class="hljs-keyword">import</span> java.util.Date;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体用户信息表 服务实现类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2022-03-11
+ */</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WmUserServiceImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ServiceImpl</span>&lt;WmUserMapper, WmUser&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IWmUserService</span> {
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;WmUser&gt; <span class="hljs-title function_">saveWmUser</span><span class="hljs-params">(WmUser user)</span> {
+        <span class="hljs-keyword">if</span> (user == <span class="hljs-literal">null</span> || user.getApUserId() == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        <span class="hljs-comment">// 新增自媒体用户</span>
+        <span class="hljs-comment">// 判断当前的用户是否已经创建了自媒体用户,可以根据用户注册表ap_user_id 来判断</span>
+        <span class="hljs-comment">// 根据ap_user_id 查询</span>
+        LambdaQueryWrapper&lt;WmUser&gt; query = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaQueryWrapper</span>&lt;&gt;();
+        query.eq(WmUser::getApUserId, user.getApUserId());
+        <span class="hljs-type">WmUser</span> <span class="hljs-variable">one</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">this</span>.getOne(query);
+        <span class="hljs-comment">// 如果有,直接返回用户信息</span>
+        <span class="hljs-keyword">if</span> (one != <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.okResult(one);
+        }
+        <span class="hljs-comment">// 没有的话,创建新的用户来返回</span>
+        user.setCreatedTime(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>());
+        <span class="hljs-built_in">this</span>.save(user);
+        <span class="hljs-keyword">return</span> ResponseResult.okResult(user);
+    }
+}
+
+</code></pre></div>
+<h3 id="73-创建作者">7.3 创建作者</h3>
+<h4 id="731-article微服务搭建">7.3.1 article微服务搭建</h4>
+<p>(1)新建模块 heima-leadnews-article ,其中引导类和pom文件依赖参考其他微服务</p>
+<p><img src="/_resources/d43b9789ed924acf939492763c220032.png" /></p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.article;
+
+<span class="hljs-keyword">import</span> org.springframework.boot.SpringApplication;
+<span class="hljs-keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;
+
+<span class="hljs-comment">/**
+ * <span class="hljs-doctag">@author</span> mcm
+ */</span>
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ArticleApp</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        SpringApplication.run(ArticleApp.class, args);
+    }
+}
+</code></pre></div>
+<p>（2）resources下新建application.yml</p>
+<div><pre class="hljs"><code><span class="hljs-attr">server:</span>
+  <span class="hljs-attr">port:</span> <span class="hljs-number">9004</span>
+<span class="hljs-attr">spring:</span>
+  <span class="hljs-attr">application:</span>
+    <span class="hljs-attr">name:</span> <span class="hljs-string">leadnews-article</span>
+  <span class="hljs-attr">datasource:</span>
+    <span class="hljs-attr">driver-class-name:</span> <span class="hljs-string">com.mysql.jdbc.Driver</span>
+    <span class="hljs-attr">url:</span> <span class="hljs-string">jdbc:mysql://192.168.85.143:3306/leadnews_article?useUnicode=true&amp;characterEncoding=UTF-8&amp;serverTimezone=UTC&amp;useSSL=false</span>
+    <span class="hljs-attr">username:</span> <span class="hljs-string">root</span>
+    <span class="hljs-attr">password:</span> <span class="hljs-string">root</span>
+  <span class="hljs-attr">cloud:</span>
+    <span class="hljs-attr">nacos:</span>
+      <span class="hljs-attr">discovery:</span>
+        <span class="hljs-attr">server-addr:</span> <span class="hljs-number">192.168</span><span class="hljs-number">.85</span><span class="hljs-number">.143</span><span class="hljs-string">:8848</span>
+<span class="hljs-attr">mybatis-plus:</span>
+  <span class="hljs-attr">configuration:</span>
+    <span class="hljs-comment"># sql输出到控制台,方便开发调试</span>
+    <span class="hljs-attr">log-impl:</span> <span class="hljs-string">org.apache.ibatis.logging.stdout.StdOutImpl</span>
+</code></pre></div>
+<h4 id="732-保存作者">7.3.2 保存作者</h4>
+<p>ap_author  作者信息表</p>
+<p><img src="/_resources/38c47215e5c84dc980dda568c0494fb0.png" /></p>
+<p>生成对应实体类/mapper/service</p>
+<p>(1)接口定义：</p>
+<ul>
+<li>保存作者</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.article.controller;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.toolkit.StringUtils;
+<span class="hljs-keyword">import</span> com.heima.article.entity.ApAuthor;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> io.swagger.annotations.Api;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiOperation;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParam;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParams;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.*;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.metadata.IPage;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+<span class="hljs-keyword">import</span> com.heima.article.service.IApAuthorService;
+
+<span class="hljs-keyword">import</span> java.util.List;
+<span class="hljs-keyword">import</span> java.util.Map;
+
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * APP文章作者信息表 前端控制器
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-08-25
+ */</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-meta">@RequestMapping("/api/v1/author")</span>
+<span class="hljs-meta">@Api(tags = "APP文章作者信息表接口")</span>
+<span class="hljs-meta">@CrossOrigin</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ApAuthorController</span> {
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IApAuthorService apAuthorService;
+
+    <span class="hljs-comment">/**
+     * 保存文章作者
+     * <span class="hljs-doctag">@param</span> entity
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;ApAuthor&gt; <span class="hljs-title function_">saveApAuthor</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> ApAuthor author)</span> {
+        <span class="hljs-keyword">return</span> apAuthorService.saveApAuthor(author);
+    }
+
+}
+</code></pre></div>
+<p>业务层接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.article.service;
+
+<span class="hljs-keyword">import</span> com.heima.article.entity.ApAuthor;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.IService;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * APP文章作者信息表 服务类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-08-25
+ */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IApAuthorService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;ApAuthor&gt; {
+
+    ResponseResult&lt;ApAuthor&gt; <span class="hljs-title function_">saveAuthor</span><span class="hljs-params">(ApAuthor author)</span>;
+}
+</code></pre></div>
+<p>实现类：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.article.service.impl;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+<span class="hljs-keyword">import</span> com.heima.article.entity.ApAuthor;
+<span class="hljs-keyword">import</span> com.heima.article.mapper.ApAuthorMapper;
+<span class="hljs-keyword">import</span> com.heima.article.service.IApAuthorService;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.enums.AppHttpCodeEnum;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+
+<span class="hljs-keyword">import</span> java.util.Date;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * APP文章作者信息表 服务实现类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2022-04-10
+ */</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ApAuthorServiceImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ServiceImpl</span>&lt;ApAuthorMapper, ApAuthor&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IApAuthorService</span> {
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;ApAuthor&gt; <span class="hljs-title function_">saveAuthor</span><span class="hljs-params">(ApAuthor entity)</span> {
+        <span class="hljs-comment">// 校验参数</span>
+        <span class="hljs-keyword">if</span> (entity == <span class="hljs-literal">null</span> || entity.getUserId() == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        <span class="hljs-comment">// 判断ap_user_id是否存在</span>
+        LambdaQueryWrapper&lt;ApAuthor&gt; query = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaQueryWrapper</span>&lt;&gt;();
+        query.eq(ApAuthor::getUserId, entity.getUserId());
+        <span class="hljs-type">ApAuthor</span> <span class="hljs-variable">one</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">this</span>.getOne(query);
+        <span class="hljs-comment">// 已存在直接返回自媒体用户</span>
+        <span class="hljs-keyword">if</span> (one != <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.okResult(one);
+        }
+        <span class="hljs-comment">// 不存在的话新增用户</span>
+        <span class="hljs-comment">// 创建时间由后端写入</span>
+        entity.setCreatedTime(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>());
+        <span class="hljs-built_in">this</span>.save(entity);
+        <span class="hljs-keyword">return</span> ResponseResult.okResult(entity);
+    }
+}
+</code></pre></div>
+<h3 id="74-用户审核接口定义">7.4 用户审核接口定义</h3>
+<ul>
+<li>审核通过</li>
+<li>审核失败</li>
+</ul>
+<p>修改ApUserRealnameController类，新增方法</p>
+<div><pre class="hljs"><code>    <span class="hljs-comment">/**
+     * 审核通过
+     *
+     * <span class="hljs-doctag">@param</span> dto
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping("/authPass")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">authPass</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> AuthDto dto)</span> {
+        <span class="hljs-keyword">return</span> apUserRealnameService.auth(dto, <span class="hljs-number">1</span>);
+    }
+
+    <span class="hljs-comment">/**
+     * 审核失败
+     * <span class="hljs-doctag">@param</span> dto
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping("/authFail")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">authFail</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> AuthDto dto)</span> {
+        <span class="hljs-keyword">return</span> apUserRealnameService.auth(dto, <span class="hljs-number">0</span>);
+    }</code></pre></div>
+<p>修改AuthDto</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.user.dto;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.PageRequestDto;
+<span class="hljs-keyword">import</span> lombok.Data;
+<span class="hljs-keyword">import</span> lombok.EqualsAndHashCode;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-meta">@EqualsAndHashCode(callSuper = true)</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">AuthDto</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">PageRequestDto</span> {
+
+    <span class="hljs-comment">/**
+     * 用户认证表ID
+     */</span>
+    <span class="hljs-keyword">private</span> Integer id;
+
+    <span class="hljs-comment">/**
+     * 驳回原因
+     */</span>
+    <span class="hljs-keyword">private</span> String reason;
+
+    <span class="hljs-comment">/**
+     * 状态
+     */</span>
+    <span class="hljs-keyword">private</span> Integer status;
+}
+</code></pre></div>
+<h3 id="75-用户审核mapper接口定义">7.5 用户审核mapper接口定义</h3>
+<p>在新建自媒体账户时需要把apuser信息赋值给自媒体用户</p>
+<p>app端用户信息表</p>
+<p><img src="/_resources/e4e51e0f78314e7183b9d673bae5621e.png" /></p>
+<p>生成实体类\mapper\service</p>
+<p>服务接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IApUserRealnameService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;ApUserRealname&gt; {
+
+    ResponseResult <span class="hljs-title function_">listByStatus</span><span class="hljs-params">(AuthDto dto)</span>;
+
+    ResponseResult <span class="hljs-title function_">auth</span><span class="hljs-params">(AuthDto dto, <span class="hljs-type">int</span> type)</span>;
+}</code></pre></div>
+<h3 id="76-feign远程接口定义">7.6 feign远程接口定义</h3>
+<h4 id="761-user微服务开启远程调用">7.6.1 user微服务开启远程调用</h4>
+<p>在heima-leadnews-service中 加入依赖</p>
+<div><pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+     <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+     <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-openfeign<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span></code></pre></div>
+<p>修改user服务引导类，添加注解<code>@EnableFeignClients</code>开启远程调用</p>
+<div><pre class="hljs"><code><span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-meta">@EnableFeignClients</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">UserApp</span> {
+
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        SpringApplication.run(UserApplication.class,args);
+    }
+}</code></pre></div>
+<h4 id="762-自媒体远程接口">7.6.2 自媒体远程接口</h4>
+<p>新建接口 MediaFeign</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.user.feign;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.user.dto.WmUser;
+<span class="hljs-keyword">import</span> org.springframework.cloud.openfeign.FeignClient;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.PostMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.PutMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RequestBody;
+
+<span class="hljs-meta">@FeignClient(value = "leadnews-media")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">MediaFeign</span> {
+
+    <span class="hljs-comment">/**
+     * 保存自媒体用户
+     *
+     * <span class="hljs-doctag">@param</span> user
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping("/api/v1/user")</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;WmUser&gt; <span class="hljs-title function_">saveWmUser</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> WmUser user)</span>;
+
+    <span class="hljs-comment">/**
+     * 更新自媒体用户
+     * <span class="hljs-doctag">@param</span> user
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PutMapping("/api/v1/user")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">updateWmUser</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> WmUser user)</span>;
+}
+</code></pre></div>
+<h4 id="763-作者远程调用接口">7.6.3 作者远程调用接口</h4>
+<p>新建接口：ArticleFeign</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.user.feign;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.user.dto.ApAuthor;
+<span class="hljs-keyword">import</span> org.springframework.cloud.openfeign.FeignClient;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.PostMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RequestBody;
+
+<span class="hljs-meta">@FeignClient("leadnews-article")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">ArticleFeign</span> {
+    <span class="hljs-comment">/**
+     * 保存文章作者
+     * <span class="hljs-doctag">@param</span> entity
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping("/api/v1/author")</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;ApAuthor&gt; <span class="hljs-title function_">saveApAuthor</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> ApAuthor entity)</span>;
+}
+</code></pre></div>
+<h3 id="77-用户审核业务层">7.7 用户审核业务层</h3>
+<p>实现类：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.user.service.impl;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.metadata.IPage;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+<span class="hljs-keyword">import</span> com.heima.common.dto.PageResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.enums.AppHttpCodeEnum;
+<span class="hljs-keyword">import</span> com.heima.user.dto.ApAuthor;
+<span class="hljs-keyword">import</span> com.heima.user.dto.AuthDto;
+<span class="hljs-keyword">import</span> com.heima.user.dto.WmUser;
+<span class="hljs-keyword">import</span> com.heima.user.entity.ApUser;
+<span class="hljs-keyword">import</span> com.heima.user.entity.ApUserRealname;
+<span class="hljs-keyword">import</span> com.heima.user.feign.ArticleFeign;
+<span class="hljs-keyword">import</span> com.heima.user.feign.MediaFeign;
+<span class="hljs-keyword">import</span> com.heima.user.mapper.ApUserRealnameMapper;
+<span class="hljs-keyword">import</span> com.heima.user.service.IApUserRealnameService;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+<span class="hljs-keyword">import</span> com.heima.user.service.IApUserService;
+<span class="hljs-keyword">import</span> org.springframework.beans.BeanUtils;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * APP实名认证信息表 服务实现类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2022-04-10
+ */</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ApUserRealnameServiceImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ServiceImpl</span>&lt;ApUserRealnameMapper, ApUserRealname&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IApUserRealnameService</span> {
+
+
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IApUserService userService;
+
+    <span class="hljs-comment">/**
+     * 认证审核
+     *
+     * <span class="hljs-doctag">@param</span> dto
+     * <span class="hljs-doctag">@param</span> type 1:通过  0:拒绝
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">auth</span><span class="hljs-params">(AuthDto dto, <span class="hljs-type">int</span> type)</span> {
+        <span class="hljs-comment">// 根据id查询认证表</span>
+        <span class="hljs-type">ApUserRealname</span> <span class="hljs-variable">apUserRealname</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">this</span>.getById(dto.getId());
+        <span class="hljs-comment">// 审核不通过</span>
+        <span class="hljs-keyword">if</span> (type == <span class="hljs-number">0</span>) {
+            <span class="hljs-comment">// 拒绝,修改认证表状态为2 并且记录原因</span>
+            apUserRealname.setStatus(<span class="hljs-number">2</span>);
+            apUserRealname.setReason(dto.getReason());
+            <span class="hljs-comment">// 更新</span>
+            <span class="hljs-built_in">this</span>.updateById(apUserRealname);
+            <span class="hljs-keyword">return</span> ResponseResult.okResult();
+        }
+        <span class="hljs-comment">// 审核通过</span>
+        <span class="hljs-comment">// 查询用户注册表信息</span>
+        <span class="hljs-type">ApUser</span> <span class="hljs-variable">apUser</span> <span class="hljs-operator">=</span> userService.getById(apUserRealname.getUserId());
+        <span class="hljs-comment">// 创建自媒体账号</span>
+        <span class="hljs-type">WmUser</span> <span class="hljs-variable">wmUser</span> <span class="hljs-operator">=</span> createWmUser(apUser);
+        <span class="hljs-keyword">if</span> (wmUser != <span class="hljs-literal">null</span>) {
+            <span class="hljs-comment">// 创建文章作者账号</span>
+            <span class="hljs-type">ApAuthor</span> <span class="hljs-variable">apAuthor</span> <span class="hljs-operator">=</span> createApAuthor(apUser, wmUser);
+            <span class="hljs-keyword">if</span> (apAuthor != <span class="hljs-literal">null</span>) {
+                <span class="hljs-comment">// 修改用户认证表状态为9</span>
+                apUserRealname.setStatus(<span class="hljs-number">9</span>);
+                <span class="hljs-built_in">this</span>.updateById(apUserRealname);
+                <span class="hljs-comment">// 修改用户注册表的flag为1 自媒体人</span>
+                apUser.setFlag(<span class="hljs-number">1</span>);
+                userService.updateById(apUser);
+            }
+        }
+        <span class="hljs-keyword">return</span> ResponseResult.okResult();
+    }
+
+    <span class="hljs-comment">/**
+     * 保存作者
+     *
+     * <span class="hljs-doctag">@param</span> apUser
+     * <span class="hljs-doctag">@param</span> wmUser
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">private</span> ApAuthor <span class="hljs-title function_">createApAuthor</span><span class="hljs-params">(ApUser apUser, WmUser wmUser)</span> {
+        <span class="hljs-type">ApAuthor</span> <span class="hljs-variable">author</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ApAuthor</span>();
+        author.setName(apUser.getName());
+        author.setUserId(apUser.getId());
+        author.setWmUserId(wmUser.getId());
+        author.setType(<span class="hljs-number">2</span>);
+        ResponseResult&lt;ApAuthor&gt; apAuthorResponseResult = articleFeign.saveAuthor(author);
+        <span class="hljs-keyword">if</span> (apAuthorResponseResult.getCode().equals(AppHttpCodeEnum.SUCCESS.getCode())) {
+            <span class="hljs-type">ApAuthor</span> <span class="hljs-variable">apAuthor</span> <span class="hljs-operator">=</span> apAuthorResponseResult.getData();
+            <span class="hljs-keyword">if</span> (apAuthor != <span class="hljs-literal">null</span>) {
+                wmUser.setApAuthorId(apAuthor.getId());
+                <span class="hljs-comment">// 更新自媒体账号</span>
+                mediaFeign.updateWmUser(wmUser);
+            }
+            <span class="hljs-keyword">return</span> apAuthor;
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+    }
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> MediaFeign mediaFeign;
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> ArticleFeign articleFeign;
+
+    <span class="hljs-comment">/**
+     * 创建自媒体账号
+     *
+     * <span class="hljs-doctag">@param</span> apUser
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">private</span> WmUser <span class="hljs-title function_">createWmUser</span><span class="hljs-params">(ApUser apUser)</span> {
+        <span class="hljs-type">WmUser</span> <span class="hljs-variable">user</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">WmUser</span>();
+        <span class="hljs-comment">// 基本信息从apUser复制</span>
+        <span class="hljs-comment">// BeanUtils.copyProperties 相同的类型和名称字段才会复制</span>
+        BeanUtils.copyProperties(apUser, user);
+        user.setId(<span class="hljs-literal">null</span>);
+        user.setApUserId(apUser.getId());
+        user.setNickname(apUser.getName());
+        user.setStatus(<span class="hljs-number">9</span>);
+        user.setType(<span class="hljs-number">0</span>);
+        <span class="hljs-comment">// 发起远程调用</span>
+        ResponseResult&lt;WmUser&gt; wmUserResponseResult = mediaFeign.saveWmUser(user);
+        <span class="hljs-keyword">if</span> (wmUserResponseResult.getCode().equals(AppHttpCodeEnum.SUCCESS.getCode())) {
+            <span class="hljs-type">WmUser</span> <span class="hljs-variable">wmUser</span> <span class="hljs-operator">=</span> wmUserResponseResult.getData();
+            <span class="hljs-keyword">return</span> wmUser;
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">null</span>;
+    }
+}
+</code></pre></div>
+<h3 id="78-测试">7.8 测试</h3>
+<p>打开前端进行测试</p>
+<h3 id="79-加入分布式事务">7.9 加入分布式事务</h3>
+<p>在需要参与分布式事务的每个微服务上添加依赖</p>
+<div><pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.alibaba.cloud<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-cloud-starter-alibaba-seata<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">exclusions</span>&gt;</span>
+        <span class="hljs-comment">&lt;!--版本较低，1.3.0，因此排除--&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">exclusion</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>seata-spring-boot-starter<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>io.seata<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">exclusion</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">exclusions</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+<span class="hljs-comment">&lt;!--seata starter 采用1.4.2版本--&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>io.seata<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>seata-spring-boot-starter<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.4.2<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span></code></pre></div>
+<p>修改配置文件</p>
+<div><pre class="hljs"><code><span class="hljs-attr">seata:</span>
+  <span class="hljs-attr">registry:</span>
+    <span class="hljs-attr">type:</span> <span class="hljs-string">nacos</span>
+    <span class="hljs-attr">nacos:</span>
+      <span class="hljs-attr">server-addr:</span> <span class="hljs-number">192.168</span><span class="hljs-number">.85</span><span class="hljs-number">.143</span><span class="hljs-string">:8848</span>
+      <span class="hljs-attr">group:</span> <span class="hljs-string">DEFAULT_GROUP</span>
+      <span class="hljs-attr">namespace:</span> <span class="hljs-string">""</span>
+      <span class="hljs-attr">application:</span> <span class="hljs-string">seata-server</span>
+      <span class="hljs-attr">cluster:</span> <span class="hljs-string">default</span>
+  <span class="hljs-attr">tx-service-group:</span> <span class="hljs-string">leadnews-user-group</span>
+  <span class="hljs-attr">service:</span>
+    <span class="hljs-attr">vgroup-mapping:</span>
+      <span class="hljs-attr">leadnews-user-group:</span> <span class="hljs-string">default</span></code></pre></div>
+<p>在user服务添加注解</p>
+<p><img src="/_resources/02eaeec5f87140cd8536127ef75634e2.png" /></p>
+</div>
+      </article>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="stylesheet" href="/_assets/main.css" />
+
+    <title>03-自媒体文章发布 - zkblog</title>
+  <link rel="stylesheet" href="/_markdown_plugin_assets/highlight.js/atom-one-light.css" /></head>
+  <body>
+    <div class="main">
+      <nav class="navigation">
+        <a href="/">zkblog</a>
+      </nav>
+      <article>
+        <header>
+          <h1 class="article-title">03-自媒体文章发布</h1>
+          <div class="article-info">
+            <div>
+              <span
+                >Created At：<time datetime="1649744100177"
+                  >2022-04-12 14:15</time
+                ></span
+              >
+              <span
+                >Updated At：<time datetime="1649744382850"
+                  >2022-04-12 14:19</time
+                ></span
+              >
+            </div>
+            
+          </div>
+        </header>
+        <div class="article-content markdown-body"><h1 id="第三章-自媒体文章发布">第三章 自媒体文章发布</h1>
+<h2 id="学习目标">学习目标</h2>
+<ul>
+<li>能够搭建自媒体系统</li>
+<li>能够完成素材管理功能</li>
+<li>能够完成自媒体文章发布功能</li>
+</ul>
+<p>上次课程总结:<a title="https://www.processon.com/view/link/60aa01af1e08534b7bc4c6e7" href="https://www.processon.com/view/link/60aa01af1e08534b7bc4c6e7">https://www.processon.com/view/link/60aa01af1e08534b7bc4c6e7</a></p>
+<h2 id="1-自媒体登录和网关">1 自媒体登录和网关</h2>
+<p>自媒体有自己的用户系统,与平台管理端用户是不一样的,同样也有自己的网关.</p>
+<h3 id="11-自媒体用户登录">1.1 自媒体用户登录</h3>
+<p>自媒体登录操作与admin端登录思路是一样的</p>
+<p>（1）自媒体登录接口</p>
+<ul>
+<li>根据用户名密码登录</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.controller;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.media.dto.LoginDto;
+<span class="hljs-keyword">import</span> com.heima.media.service.IWmUserService;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.PostMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RequestBody;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RequestMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-meta">@RequestMapping("/login")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">LoginController</span> {
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IWmUserService userService;
+
+    <span class="hljs-comment">/**
+     * 登录
+     * <span class="hljs-doctag">@param</span> dto
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping("/in")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">login</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> LoginDto dto)</span>{
+        <span class="hljs-keyword">return</span> userService.login(dto);
+    }
+}
+</code></pre></div>
+<p>LoginDto</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.dto;
+
+<span class="hljs-keyword">import</span> lombok.Data;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">LoginDto</span> {
+
+    <span class="hljs-comment">/**
+     * 用户名
+     */</span>
+    <span class="hljs-keyword">private</span> String name;
+
+    <span class="hljs-comment">/**
+     * 密码
+     */</span>
+    <span class="hljs-keyword">private</span> String password;
+}</code></pre></div>
+<p>（2）业务层</p>
+<p>业务层接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IWmUserService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;WmUser&gt; {
+
+    ResponseResult&lt;WmUser&gt; <span class="hljs-title function_">saveWmUser</span><span class="hljs-params">(WmUser entity)</span>;
+
+    ResponseResult <span class="hljs-title function_">login</span><span class="hljs-params">(LoginDto dto)</span>;
+}</code></pre></div>
+<p>实现类 WmUserServiceImpl ：</p>
+<div><pre class="hljs"><code>    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">login</span><span class="hljs-params">(LoginDto dto)</span> {
+        <span class="hljs-comment">// 需求分析</span>
+        <span class="hljs-keyword">if</span> (dto == <span class="hljs-literal">null</span> || StringUtils.isEmpty(dto.getName()) || StringUtils.isEmpty(dto.getPassword())) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.PARAM_INVALID);
+        }
+        <span class="hljs-comment">// 根据用户名查询</span>
+        LambdaQueryWrapper&lt;WmUser&gt; query = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaQueryWrapper</span>&lt;&gt;();
+        query.eq(WmUser::getName, dto.getName());
+        <span class="hljs-type">WmUser</span> <span class="hljs-variable">adUser</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">this</span>.getOne(query);
+        <span class="hljs-comment">// 不存在,提示错误消息</span>
+        <span class="hljs-keyword">if</span> (adUser == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.DATA_NOT_EXIST);
+        }
+        <span class="hljs-comment">// 存在,获取盐,使用用户传入的密码+盐 进行md5计算</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">salt</span> <span class="hljs-operator">=</span> adUser.getSalt();
+        <span class="hljs-type">String</span> <span class="hljs-variable">pwdStr</span> <span class="hljs-operator">=</span> dto.getPassword() + salt;
+        <span class="hljs-type">String</span> <span class="hljs-variable">md5Str</span> <span class="hljs-operator">=</span> DigestUtils.md5DigestAsHex(pwdStr.getBytes());
+        <span class="hljs-comment">// 对比md5值和数据库中存放的密码</span>
+        <span class="hljs-keyword">if</span> (!md5Str.equals(adUser.getPassword())) {
+            <span class="hljs-comment">// 不一致,返回密码错误</span>
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.LOGIN_PASSWORD_ERROR);
+        }
+
+        <span class="hljs-comment">// 一致的话,使用JWT生成token 使用用户id生成</span>
+        Map&lt;String, Object&gt; claimMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();
+        claimMap.put(<span class="hljs-string">"userId"</span>, adUser.getId());
+        claimMap.put(<span class="hljs-string">"userName"</span>, adUser.getName());
+        <span class="hljs-type">String</span> <span class="hljs-variable">token</span> <span class="hljs-operator">=</span> AppJwtUtil.getToken(claimMap);
+
+        <span class="hljs-comment">// 定义返回的结果</span>
+        Map&lt;String, Object&gt; map = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();
+        <span class="hljs-comment">// 脱敏处理</span>
+        adUser.setPhone(<span class="hljs-literal">null</span>);
+        adUser.setPassword(<span class="hljs-literal">null</span>);
+        adUser.setSalt(<span class="hljs-literal">null</span>);
+        map.put(<span class="hljs-string">"user"</span>, adUser);
+        map.put(<span class="hljs-string">"token"</span>, token);
+        <span class="hljs-comment">// 通用的响应</span>
+        <span class="hljs-keyword">return</span> ResponseResult.okResult(map);
+    }</code></pre></div>
+<p>（3）测试</p>
+<p><img src="/_resources/f6dec4e3a14b4700a9971d73e5a2afa1.png" /></p>
+<h3 id="12-自媒体网关">1.2 自媒体网关</h3>
+<p>自媒体网关 heima-leadnews-media-gateway 与admin端网关几乎是一样的，可以参考admin端网关</p>
+<p>①启动类</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.gateway;
+
+<span class="hljs-keyword">import</span> org.springframework.boot.SpringApplication;
+<span class="hljs-keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;
+
+<span class="hljs-comment">/**
+ * <span class="hljs-doctag">@author</span> mcm
+ */</span>
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MediaGateway</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        SpringApplication.run(MediaGateway.class, args);
+    }
+}
+</code></pre></div>
+<p>②从admin网关中把配置类、过滤器和JWT工具拷贝过来</p>
+<p><img src="/_resources/db4fd042e39d47669b37096a9592a666.png" /></p>
+<p>③新增application.yml</p>
+<div><pre class="hljs"><code><span class="hljs-attr">server:</span>
+  <span class="hljs-attr">port:</span> <span class="hljs-number">6002</span>
+<span class="hljs-attr">spring:</span>
+  <span class="hljs-attr">application:</span>
+    <span class="hljs-attr">name:</span> <span class="hljs-string">leadnews-media-gateway</span>
+  <span class="hljs-attr">cloud:</span>
+    <span class="hljs-attr">nacos:</span>
+      <span class="hljs-attr">discovery:</span>
+        <span class="hljs-attr">server-addr:</span> <span class="hljs-number">192.168</span><span class="hljs-number">.85</span><span class="hljs-number">.143</span><span class="hljs-string">:8848</span>
+    <span class="hljs-attr">gateway:</span>
+      <span class="hljs-attr">globalcors:</span>
+        <span class="hljs-attr">cors-configurations:</span>
+          <span class="hljs-string">'[/**]'</span><span class="hljs-string">:</span> <span class="hljs-comment"># 匹配所有请求</span>
+            <span class="hljs-attr">allowedOrigins:</span> <span class="hljs-string">"*"</span> <span class="hljs-comment">#跨域处理 允许所有的域</span>
+            <span class="hljs-attr">allowedMethods:</span> <span class="hljs-comment"># 支持的方法</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">GET</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">POST</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">PUT</span>
+            <span class="hljs-bullet">-</span> <span class="hljs-string">DELETE</span>
+      <span class="hljs-attr">routes:</span>
+      <span class="hljs-comment"># 自媒体管理</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">id:</span> <span class="hljs-string">media</span>
+        <span class="hljs-attr">uri:</span> <span class="hljs-string">lb://leadnews-media</span>
+        <span class="hljs-attr">predicates:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">Path=/media/**</span>
+        <span class="hljs-attr">filters:</span>
+        <span class="hljs-bullet">-</span> <span class="hljs-string">StripPrefix=</span> <span class="hljs-number">1</span></code></pre></div>
+<p>网关测试 <a title="http://localhost:6002/media/login/in" href="http://localhost:6002/media/login/in">http://localhost:6002/media/login/in</a></p>
+<p><img src="/_resources/fb47c03d53474e808cfeb622a3868437.png" /></p>
+<h3 id="13-自媒体前端">1.3 自媒体前端</h3>
+<p>打开资料中的<code>heima-leadnews-media-vue</code>项目,先执行</p>
+<div><pre class="hljs"><code>npm install
+npm rebuild node-sass</code></pre></div>
+<p><img src="/_resources/cd9069daa97a4ab1a1fe55bf7857130d.png" /></p>
+<p><img src="/_resources/317526692ae0443d8c6efcacab785836.png" /></p>
+<h2 id="2-对象存储服务minio">2 对象存储服务MinIO</h2>
+<h3 id="21-minio简介">2.1 MinIO简介</h3>
+<p>MinIO基于Apache License v2.0开源协议的对象存储服务，可以做为云存储的解决方案用来保存海量的图片，视频，文档。由于采用Golang实现，服务端可以工作在Windows,Linux, OS X和FreeBSD上。配置简单，基本是复制可执行程序，单行命令可以运行起来。</p>
+<p>MinIO兼容亚马逊S3云存储服务接口，非常适合于存储大容量非结构化的数据，例如图片、视频、日志文件、备份数据和容器/虚拟机镜像等，而一个对象文件可以是任意大小，从几kb到最大5T不等。</p>
+<p><strong>S3 （ Simple Storage Service简单存储服务）</strong></p>
+<p>基本概念</p>
+<ul>
+<li>bucket – 类比于文件系统的目录</li>
+<li>Object – 类比文件系统的文件</li>
+<li>Keys – 类比文件名</li>
+</ul>
+<p>官网文档：<a title="http://docs.minio.org.cn/docs/" href="http://docs.minio.org.cn/docs/">http://docs.minio.org.cn/docs/</a></p>
+<h3 id="22-minio特点">2.2 MinIO特点</h3>
+<ul>
+<li>
+<p>数据保护</p>
+<p>Minio使用Minio Erasure Code（纠删码）来防止硬件故障。即便损坏一半以上的driver，但是仍然可以从中恢复。</p>
+</li>
+<li>
+<p>高性能</p>
+<p>作为高性能对象存储，在标准硬件条件下它能达到55GB/s的读、35GB/s的写速率</p>
+</li>
+<li>
+<p>可扩容</p>
+<p>不同MinIO集群可以组成联邦，并形成一个全局的命名空间，并跨越多个数据中心</p>
+</li>
+<li>
+<p>SDK支持</p>
+<p>基于Minio轻量的特点，它得到类似Java、Python或Go等语言的sdk支持</p>
+</li>
+<li>
+<p>有操作页面</p>
+<p>面向用户友好的简单操作界面，非常方便的管理Bucket及里面的文件资源</p>
+</li>
+<li>
+<p>功能简单</p>
+<p>这一设计原则让MinIO不容易出错、更快启动</p>
+</li>
+<li>
+<p>丰富的API</p>
+<p>支持文件资源的分享连接及分享链接的过期策略、存储桶操作、文件列表访问及文件上传下载的基本功能等。</p>
+</li>
+<li>
+<p>文件变化主动通知</p>
+<p>存储桶（Bucket）如果发生改变,比如上传对象和删除对象，可以使用存储桶事件通知机制进行监控，并通过以下方式发布出去:AMQP、MQTT、Elasticsearch、Redis、NATS、MySQL、Kafka、Webhooks等。</p>
+</li>
+</ul>
+<h3 id="23-开箱使用">2.3 开箱使用</h3>
+<h4 id="231-安装启动">2.3.1 安装启动</h4>
+<p>我们提供的镜像中已经有minio的环境</p>
+<p>我们可以使用docker进行环境部署和启动</p>
+<div><pre class="hljs"><code>docker run -d -p 9000:9000 -p 9001:9001 \
+  -e "MINIO_ROOT_USER=minio" \
+  -e "MINIO_ROOT_PASSWORD=minio123" \
+  -v /opt/minio/data:/data \
+  -v /opt/minio/config:/root/.minio \
+  minio/minio server --console-address ":9001" /data</code></pre></div>
+<p>在虚拟机中直接通过docker-compose启动</p>
+<div><pre class="hljs"><code>cd /opt/hmtt/io
+./start.sh</code></pre></div>
+<h4 id="232-管理控制台">2.3.2 管理控制台</h4>
+<p>访问 <a title="http://192.168.85.143:9000" href="http://192.168.85.143:9000">http://192.168.85.143:9000</a></p>
+<p><img src="/_resources/701c7d7324bc45f190ff025f0b76f1d3.png" /></p>
+<p>Access Key为minio   Secret_key 为minio123    进入系统后可以看到主界面</p>
+<p><img src="/_resources/29751c1d66114a31ba066aac98299fe1.png" /></p>
+<p>创建一个桶</p>
+<p><img src="/_resources/95973862a2ae445e81f999078c233c0d.png" /></p>
+<p>添加名称</p>
+<p><img src="/_resources/2a708e1995bd41258521bf32217439b7.png" /></p>
+<p>设置访问权限</p>
+<p><img src="/_resources/51c60a4851f049a58b80c349f8184a95.png" /></p>
+<p>改成public</p>
+<p><img src="/_resources/0bd819a11fd341fe8983ebb580d5b9c2.png" /></p>
+<p>可以在对象浏览器中看到创建好的桶</p>
+<p><img src="/_resources/09859b677f274487b5fe3d779f2006f4.png" /></p>
+<p>点击进去可以上传文件</p>
+<p><img src="/_resources/19676dbff9fa4256b170e37c933d6e33.png" /></p>
+<p><img src="/_resources/1a57d1bbfafa4c41a32e39ddc7bec9ff.png" /></p>
+<p>上传完成后可以通过地址+桶名+文件名访问</p>
+<p><img src="/_resources/9827f48f8571489099e08d611934b313.png" /></p>
+<h3 id="24-快速入门">2.4 快速入门</h3>
+<p><strong>注意: MinIO操作时会判断系统时间与操作时间是否一致,如果虚拟机一直不关闭,而是挂起的话,会导致时间不一致.</strong></p>
+<h4 id="241-创建工程导入pom依赖">2.4.1 创建工程，导入pom依赖</h4>
+<p>创建minio-demo,对应pom如下</p>
+<div><pre class="hljs"><code><span class="hljs-meta">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">project</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">"http://maven.apache.org/POM/4.0.0"</span>
+         <span class="hljs-attr">xmlns:xsi</span>=<span class="hljs-string">"http://www.w3.org/2001/XMLSchema-instance"</span>
+         <span class="hljs-attr">xsi:schemaLocation</span>=<span class="hljs-string">"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">modelVersion</span>&gt;</span>4.0.0<span class="hljs-tag">&lt;/<span class="hljs-name">modelVersion</span>&gt;</span>
+
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.heima<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>minio-demo<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.0-SNAPSHOT<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">parent</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.boot<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-boot-starter-parent<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>2.2.8.RELEASE<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">relativePath</span>/&gt;</span> <span class="hljs-comment">&lt;!-- lookup parent from repository --&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">parent</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">properties</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">java.version</span>&gt;</span>1.8<span class="hljs-tag">&lt;/<span class="hljs-name">java.version</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">properties</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.springframework.boot<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>spring-boot-starter-web<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>io.minio<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>minio<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>7.1.2<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.projectlombok<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>lombok<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+            <span class="hljs-tag">&lt;<span class="hljs-name">optional</span>&gt;</span>true<span class="hljs-tag">&lt;/<span class="hljs-name">optional</span>&gt;</span>
+        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">project</span>&gt;</span>
+</code></pre></div>
+<p>项目整体结构</p>
+<p><img src="/_resources/d5efb24c39d24ba2b1f4fe1dc15da69a.png" /></p>
+<p>引导类：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.minio;
+
+<span class="hljs-keyword">import</span> org.springframework.boot.SpringApplication;
+<span class="hljs-keyword">import</span> org.springframework.boot.autoconfigure.SpringBootApplication;
+
+<span class="hljs-comment">/**
+ * <span class="hljs-doctag">@author</span> mcm
+ */</span>
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MinIOApp</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        SpringApplication.run(MinIOApp.class, args);
+    }
+}
+</code></pre></div>
+<p>配置文件</p>
+<div><pre class="hljs"><code><span class="hljs-attr">server:</span>
+  <span class="hljs-attr">port:</span> <span class="hljs-number">8001</span>
+<span class="hljs-attr">minio:</span>
+  <span class="hljs-attr">endpoint:</span> <span class="hljs-string">http://192.168.85.143:9000</span>
+  <span class="hljs-attr">accessKey:</span> <span class="hljs-string">minio</span>
+  <span class="hljs-attr">secretKey:</span> <span class="hljs-string">minio123</span>
+  <span class="hljs-attr">bucketName:</span> <span class="hljs-string">heima</span></code></pre></div>
+<p>配置读取类</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.minio.config;
+
+<span class="hljs-keyword">import</span> lombok.Data;
+<span class="hljs-keyword">import</span> org.springframework.boot.context.properties.ConfigurationProperties;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-meta">@ConfigurationProperties(prefix = "minio")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MinIOProperties</span> {
+    <span class="hljs-keyword">private</span> String endpoint;
+    <span class="hljs-keyword">private</span> String accessKey;
+    <span class="hljs-keyword">private</span> String secretKey;
+    <span class="hljs-keyword">private</span> String bucketName;
+}
+</code></pre></div>
+<p>配置类</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.minio.config;
+
+<span class="hljs-keyword">import</span> io.minio.MinioClient;
+<span class="hljs-keyword">import</span> io.minio.errors.InvalidEndpointException;
+<span class="hljs-keyword">import</span> io.minio.errors.InvalidPortException;
+<span class="hljs-keyword">import</span> org.springframework.boot.context.properties.EnableConfigurationProperties;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Bean;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;
+
+<span class="hljs-meta">@Configuration</span>
+<span class="hljs-meta">@EnableConfigurationProperties(MinIOProperties.class)</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MinIOConfig</span> {
+
+    <span class="hljs-meta">@Bean</span>
+    <span class="hljs-keyword">public</span> MinioClient <span class="hljs-title function_">minioClient</span><span class="hljs-params">(MinIOProperties minIOProperties)</span> <span class="hljs-keyword">throws</span> InvalidPortException, InvalidEndpointException {
+        <span class="hljs-comment">// 使用MinIO服务的URL，端口，Access key和Secret key创建一个MinioClient对象</span>
+        <span class="hljs-type">MinioClient</span> <span class="hljs-variable">minioClient</span> <span class="hljs-operator">=</span> MinioClient.builder()
+                .endpoint(minIOProperties.getEndpoint())
+                .credentials(minIOProperties.getAccessKey(),minIOProperties.getSecretKey())
+                .build();
+        <span class="hljs-keyword">return</span> minioClient;
+    }
+}
+</code></pre></div>
+<p>服务类</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.minio.service;
+
+<span class="hljs-keyword">import</span> com.heima.minio.config.MinIOProperties;
+<span class="hljs-keyword">import</span> io.minio.MinioClient;
+<span class="hljs-keyword">import</span> io.minio.PutObjectArgs;
+<span class="hljs-keyword">import</span> io.minio.RemoveObjectArgs;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+<span class="hljs-keyword">import</span> org.springframework.web.multipart.MultipartFile;
+
+<span class="hljs-keyword">import</span> java.util.UUID;
+
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MinIOService</span> {
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> MinioClient minioClient;
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> MinIOProperties properties;
+
+    <span class="hljs-comment">/**
+     * 上传文件
+     * <span class="hljs-doctag">@param</span> file
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">public</span> String <span class="hljs-title function_">upload</span><span class="hljs-params">(MultipartFile file)</span> {
+        <span class="hljs-comment">// 原文件名</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">originalFilename</span> <span class="hljs-operator">=</span> file.getOriginalFilename();
+        <span class="hljs-comment">// 获取文件的后缀</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">suffix</span> <span class="hljs-operator">=</span> originalFilename.substring(originalFilename.lastIndexOf(<span class="hljs-string">"."</span>));
+        <span class="hljs-comment">// 构造新的文件名，名字不重复</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">objectName</span> <span class="hljs-operator">=</span> UUID.randomUUID().toString() + suffix;
+        <span class="hljs-comment">// 上传文件</span>
+        <span class="hljs-keyword">try</span> {
+            <span class="hljs-type">PutObjectArgs</span> <span class="hljs-variable">putObjectArgs</span> <span class="hljs-operator">=</span> PutObjectArgs.builder()
+                    .contentType(file.getContentType())
+                    .stream(file.getInputStream(), file.getSize(), -<span class="hljs-number">1</span>)
+                    .bucket(properties.getBucketName())
+                    .object(objectName)
+                    .build();
+            minioClient.putObject(putObjectArgs);
+        } <span class="hljs-keyword">catch</span> (Exception e) {
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(<span class="hljs-string">"上传文件失败: "</span> + e.getMessage());
+        }
+        <span class="hljs-keyword">return</span> properties.getEndpoint() + <span class="hljs-string">"/"</span> + properties.getBucketName() + <span class="hljs-string">"/"</span> + objectName;
+    }
+
+    <span class="hljs-comment">/**
+     * 删除文件
+     * <span class="hljs-doctag">@param</span> url
+     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">delete</span><span class="hljs-params">(String url)</span>{
+        <span class="hljs-type">String</span> <span class="hljs-variable">objectName</span> <span class="hljs-operator">=</span> url.replace(properties.getEndpoint()+<span class="hljs-string">"/"</span>,<span class="hljs-string">""</span>)
+                .replace(properties.getBucketName()+<span class="hljs-string">"/"</span>,<span class="hljs-string">""</span>);
+        <span class="hljs-type">RemoveObjectArgs</span> <span class="hljs-variable">args</span> <span class="hljs-operator">=</span> RemoveObjectArgs.builder()
+                .bucket(properties.getBucketName())
+                .object(objectName)
+                .build();
+        <span class="hljs-keyword">try</span> {
+            minioClient.removeObject(args);
+        } <span class="hljs-keyword">catch</span> (Exception e) {
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(<span class="hljs-string">"删除文件失败: "</span> + e.getMessage());
+        }
+    }
+     <span class="hljs-comment">/**
+     * 下载文件
+     * <span class="hljs-doctag">@param</span> url
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">public</span> InputStream <span class="hljs-title function_">download</span><span class="hljs-params">(String url)</span>{
+        <span class="hljs-type">String</span> <span class="hljs-variable">objectName</span> <span class="hljs-operator">=</span> url.replace(properties.getEndpoint()+<span class="hljs-string">"/"</span>,<span class="hljs-string">""</span>)
+                .replace(properties.getBucketName()+<span class="hljs-string">"/"</span>,<span class="hljs-string">""</span>);
+        <span class="hljs-type">GetObjectArgs</span> <span class="hljs-variable">args</span> <span class="hljs-operator">=</span> GetObjectArgs.builder()
+                .bucket(properties.getBucketName())
+                .object(objectName)
+                .build();
+        <span class="hljs-type">InputStream</span> <span class="hljs-variable">inputStream</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;
+        <span class="hljs-keyword">try</span> {
+            inputStream = minioClient.getObject(args);
+        } <span class="hljs-keyword">catch</span> (Exception e) {
+            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">RuntimeException</span>(<span class="hljs-string">"下载文件失败: "</span> + e.getMessage());
+        }
+        <span class="hljs-keyword">return</span> inputStream;
+    }
+}
+</code></pre></div>
+<p>测试接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.minio.controller;
+
+<span class="hljs-keyword">import</span> com.heima.minio.service.MinIOService;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.http.ResponseEntity;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.DeleteMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.PostMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RequestMapping;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+<span class="hljs-keyword">import</span> org.springframework.web.multipart.MultipartFile;
+
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-meta">@RequestMapping("/file")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">FileController</span> {
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> MinIOService minIOService;
+
+    <span class="hljs-meta">@PostMapping("/upload")</span>
+    <span class="hljs-keyword">public</span> ResponseEntity&lt;String&gt; <span class="hljs-title function_">upload</span><span class="hljs-params">(MultipartFile file)</span> {
+        <span class="hljs-type">String</span> <span class="hljs-variable">url</span> <span class="hljs-operator">=</span> minIOService.upload(file);
+        <span class="hljs-keyword">return</span> ResponseEntity.ok(url);
+    }
+
+    <span class="hljs-meta">@DeleteMapping</span>
+    <span class="hljs-keyword">public</span> ResponseEntity <span class="hljs-title function_">delete</span><span class="hljs-params">(String url)</span> {
+        minIOService.delete(url);
+        <span class="hljs-keyword">return</span> ResponseEntity.ok(<span class="hljs-literal">null</span>);
+    }
+}</code></pre></div>
+<p>使用postman测试</p>
+<p>上传测试</p>
+<p><img src="/_resources/d6aa7d669045480bbf8b52db47653a3c.png" /></p>
+<p>删除测试</p>
+<p><img src="/_resources/ca81fe178fb2443d80100ba1b9afc445.png" /></p>
+<h3 id="25-项目集成minio">2.5 项目集成MinIO</h3>
+<p>后面需要在项目中多个地方应用，所以封装到通用的模块中，方便后期各个模块引用。</p>
+<p>（1）heima-leadnews-common模块中加入依赖</p>
+<div><pre class="hljs"><code><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>io.minio<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>minio<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>7.1.2<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span></code></pre></div>
+<p>（2）heima-leadnews-common中新建包:com.heima.common.minio</p>
+<p>将<code>MinIOProperties</code> <code>MinIOConfig</code>  <code>MinIOService</code> 复制到minio包中</p>
+<p>(3) 在heima-leadnews-media微服务中添加配置</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.config;
+
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.ComponentScan;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;
+
+<span class="hljs-meta">@Configuration</span>
+<span class="hljs-meta">@ComponentScan({"com.heima.common.minio"})</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MinIoConfig</span> {
+}
+</code></pre></div>
+<p>(4) 在配置文件中添加minio配置</p>
+<div><pre class="hljs"><code><span class="hljs-attr">minio:</span>
+  <span class="hljs-attr">endpoint:</span> <span class="hljs-string">http://192.168.85.143:9000</span>
+  <span class="hljs-attr">accessKey:</span> <span class="hljs-string">minio</span>
+  <span class="hljs-attr">secretKey:</span> <span class="hljs-string">minio123</span>
+  <span class="hljs-attr">bucketName:</span> <span class="hljs-string">heima</span></code></pre></div>
+<h2 id="3-素材管理">3 素材管理</h2>
+<p>自媒体用户登录自媒体端后台可以发布自媒体文章,文章中可以包含图片,用户可以在后台对图片素材进行上传,收藏,删除等操作.</p>
+<h3 id="33-图片上传">3.3 图片上传</h3>
+<p><img src="/_resources/0c2b48a2b9e2454f94eae198878e3454.png" /></p>
+<p>自媒体用户登录自媒体端后台可以上传图片,后台将图片上传到minio，同时要保存一份数据到表中，方便后期管理.</p>
+<p>媒体图文素材信息表wm_material, 使用代码生成器生成各层代码</p>
+<p><img src="/_resources/79baf9e52a2f4e38bdbfae8aa25404ae.png" /></p>
+<p>从表中可以看出,每个自媒体人都可以上传自己的图片,这里就要求在上传图片时指定自媒体用户的Id</p>
+<h4 id="331-获取登录用户">3.3.1 获取登录用户</h4>
+<p>获取登录用户思路分析</p>
+<p>保存图片之前，需要先知道是哪一位自媒体人登录了当前系统，也就是需要确定哪个自媒体人上传了图片</p>
+<p><img src="/_resources/1de1db2727434003a988e8fcb7faac70.png" /></p>
+<p>操作步骤：</p>
+<p>1，上传图片需要携带token</p>
+<p>2，首先请求到网关服务，解析token是否有效，如果有效，解析后把用户数据设置到下一级请求的header中</p>
+<p>3，在自媒体微服务中使用拦截器解析header中的数据，拿到用户数据，设置到当前本地线程中</p>
+<p>4，在具体业务代码中可以从当前本地线程中获取用户</p>
+<p>前面两步都已经实现，接下来实现后两步即可</p>
+<p>1)添加工具类</p>
+<p>在使用拦截器解析后的用户需要放在当前线程中，可以使用工具类来实现，在common模块中添加如下类</p>
+<p>User</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.common.dto;
+
+<span class="hljs-keyword">import</span> lombok.AllArgsConstructor;
+<span class="hljs-keyword">import</span> lombok.Data;
+<span class="hljs-keyword">import</span> lombok.NoArgsConstructor;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-meta">@NoArgsConstructor</span>
+<span class="hljs-meta">@AllArgsConstructor</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">User</span> {
+    <span class="hljs-comment">/**
+     * 用户id
+     */</span>
+    <span class="hljs-keyword">private</span> Integer userId;
+}
+</code></pre></div>
+<p>MediaThreadLocalUtil</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.common.util;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.User;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MediaThreadLocalUtil</span> {
+    <span class="hljs-comment">// 定义本地线程</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> ThreadLocal&lt;User&gt; tl = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ThreadLocal</span>&lt;&gt;();
+
+    <span class="hljs-comment">/**
+     * 设置本地线程中的用户
+     *
+     * <span class="hljs-doctag">@param</span> user
+     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">set</span><span class="hljs-params">(User user)</span> {
+        tl.set(user);
+    }
+
+    <span class="hljs-comment">/**
+     * 获取本地线程中的用户
+     *
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> User <span class="hljs-title function_">get</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> tl.get();
+    }
+
+    <span class="hljs-comment">/**
+     * 删除本地线程中的用户
+     */</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">remove</span><span class="hljs-params">()</span> {
+        tl.remove();
+    }
+}
+</code></pre></div>
+<p>2)在自媒体微服务中添加拦截器:</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.interceptor;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.User;
+<span class="hljs-keyword">import</span> com.heima.common.util.MediaThreadLocalUtil;
+<span class="hljs-keyword">import</span> org.springframework.util.StringUtils;
+<span class="hljs-keyword">import</span> org.springframework.web.servlet.HandlerInterceptor;
+<span class="hljs-keyword">import</span> org.springframework.web.servlet.ModelAndView;
+
+<span class="hljs-keyword">import</span> javax.servlet.http.HttpServletRequest;
+<span class="hljs-keyword">import</span> javax.servlet.http.HttpServletResponse;
+
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">UserInterceptor</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">HandlerInterceptor</span> {
+
+    <span class="hljs-comment">/**
+     * 前置拦截
+     *
+     * <span class="hljs-doctag">@param</span> request
+     * <span class="hljs-doctag">@param</span> response
+     * <span class="hljs-doctag">@param</span> handler
+     * <span class="hljs-doctag">@return</span>
+     * <span class="hljs-doctag">@throws</span> Exception
+     */</span>
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">preHandle</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response, Object handler)</span> <span class="hljs-keyword">throws</span> Exception {
+        <span class="hljs-comment">// 获取请求头中的userId</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">userId</span> <span class="hljs-operator">=</span> request.getHeader(<span class="hljs-string">"userId"</span>);
+        <span class="hljs-comment">// 如果不为空,将userId存放到本地线程中</span>
+        <span class="hljs-keyword">if</span> (!StringUtils.isEmpty(userId)) {
+            <span class="hljs-type">User</span> <span class="hljs-variable">user</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">User</span>();
+            user.setUserId(Integer.parseInt(userId));
+            MediaThreadLocalUtil.set(user);
+        }
+        <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+    }
+
+    <span class="hljs-comment">/**
+     * 后置拦截
+     *
+     * <span class="hljs-doctag">@param</span> request
+     * <span class="hljs-doctag">@param</span> response
+     * <span class="hljs-doctag">@param</span> handler
+     * <span class="hljs-doctag">@param</span> modelAndView
+     * <span class="hljs-doctag">@throws</span> Exception
+     */</span>
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">postHandle</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView)</span> <span class="hljs-keyword">throws</span> Exception {
+        MediaThreadLocalUtil.remove();
+    }
+
+    <span class="hljs-comment">/**
+     * 渲染后
+     *
+     * <span class="hljs-doctag">@param</span> request
+     * <span class="hljs-doctag">@param</span> response
+     * <span class="hljs-doctag">@param</span> handler
+     * <span class="hljs-doctag">@param</span> ex
+     * <span class="hljs-doctag">@throws</span> Exception
+     */</span>
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">afterCompletion</span><span class="hljs-params">(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)</span> <span class="hljs-keyword">throws</span> Exception {
+
+    }
+}
+</code></pre></div>
+<p>配置拦截器</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.config;
+
+<span class="hljs-keyword">import</span> com.heima.media.interceptor.UserInterceptor;
+<span class="hljs-keyword">import</span> org.springframework.context.annotation.Configuration;
+<span class="hljs-keyword">import</span> org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+<span class="hljs-keyword">import</span> org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+<span class="hljs-meta">@Configuration</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WebConfig</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">WebMvcConfigurer</span> {
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">addInterceptors</span><span class="hljs-params">(InterceptorRegistry registry)</span> {
+        registry.addInterceptor(<span class="hljs-keyword">new</span> <span class="hljs-title class_">UserInterceptor</span>())  <span class="hljs-comment">// 指定自定义的拦截器</span>
+                .addPathPatterns(<span class="hljs-string">"/**"</span>);    <span class="hljs-comment">// 指定需要拦截的路径,这里拦截所有</span>
+    }
+}</code></pre></div>
+<h4 id="332-图片上传-接口">3.3.2 图片上传-接口</h4>
+<ul>
+<li>上传图片并返回图片地址</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.controller;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.toolkit.StringUtils;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmMaterial;
+<span class="hljs-keyword">import</span> io.swagger.annotations.Api;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiOperation;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParam;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParams;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.*;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.metadata.IPage;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+<span class="hljs-keyword">import</span> com.heima.media.service.IWmMaterialService;
+<span class="hljs-keyword">import</span> java.util.List;
+<span class="hljs-keyword">import</span> java.util.Map;
+
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+<span class="hljs-keyword">import</span> org.springframework.web.multipart.MultipartFile;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体图文素材信息表 前端控制器
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2022-03-12
+ */</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-meta">@RequestMapping("/api/v1/material")</span>
+<span class="hljs-meta">@Api(tags = "自媒体图文素材信息表接口")</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WmMaterialController</span>{
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IWmMaterialService wmMaterialService;
+
+
+    <span class="hljs-comment">/**
+     * 图片上传
+     * <span class="hljs-doctag">@param</span> file
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@PostMapping("/upload_picture")</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;WmMaterial&gt; <span class="hljs-title function_">upload</span><span class="hljs-params">(MultipartFile file)</span>{
+        <span class="hljs-keyword">return</span> wmMaterialService.upload(file);
+    }
+}
+</code></pre></div>
+<h4 id="333-图片上传-service">3.3.3 图片上传-service</h4>
+<p>接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.service;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmMaterial;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.IService;
+<span class="hljs-keyword">import</span> org.springframework.web.multipart.MultipartFile;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体图文素材信息表 服务类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2022-03-12
+ */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IWmMaterialService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;WmMaterial&gt; {
+
+    ResponseResult&lt;WmMaterial&gt; <span class="hljs-title function_">upload</span><span class="hljs-params">(MultipartFile file)</span>;
+}
+</code></pre></div>
+<p>实现类：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.service.impl;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.dto.User;
+<span class="hljs-keyword">import</span> com.heima.common.enums.AppHttpCodeEnum;
+<span class="hljs-keyword">import</span> com.heima.common.minio.MinIOService;
+<span class="hljs-keyword">import</span> com.heima.common.util.MediaThreadLocalUtil;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmMaterial;
+<span class="hljs-keyword">import</span> com.heima.media.mapper.WmMaterialMapper;
+<span class="hljs-keyword">import</span> com.heima.media.service.IWmMaterialService;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+<span class="hljs-keyword">import</span> org.springframework.web.multipart.MultipartFile;
+
+<span class="hljs-keyword">import</span> java.util.Date;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体图文素材信息表 服务实现类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2022-03-12
+ */</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WmMaterialServiceImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ServiceImpl</span>&lt;WmMaterialMapper, WmMaterial&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IWmMaterialService</span> {
+
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> MinIOService minIOService;
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult&lt;WmMaterial&gt; <span class="hljs-title function_">upload</span><span class="hljs-params">(MultipartFile file)</span> {
+
+        <span class="hljs-comment">// 用户id从本地线程中获取</span>
+        <span class="hljs-type">User</span> <span class="hljs-variable">user</span> <span class="hljs-operator">=</span> MediaThreadLocalUtil.get();
+        <span class="hljs-keyword">if</span> (user == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+        <span class="hljs-comment">// 调用minio上传图片,获取url地址</span>
+        <span class="hljs-type">String</span> <span class="hljs-variable">url</span> <span class="hljs-operator">=</span> minIOService.upload(file);
+        <span class="hljs-comment">// 构建素材对象,存入到数据库中</span>
+        <span class="hljs-type">WmMaterial</span> <span class="hljs-variable">material</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">WmMaterial</span>();
+        material.setUserId(user.getUserId());
+        material.setUrl(url);
+        material.setType(<span class="hljs-number">0</span>);
+        material.setIsCollection(<span class="hljs-literal">false</span>);
+        material.setCreatedTime(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>());
+        <span class="hljs-built_in">this</span>.save(material);
+        <span class="hljs-keyword">return</span> ResponseResult.okResult(material);
+    }
+}
+</code></pre></div>
+<h4 id="333-测试">3.3.3 测试</h4>
+<p>打开前端进行测试</p>
+<h3 id="34-素材列表加载">3.4 素材列表加载</h3>
+<p><img src="/_resources/d16ac37b9a7446c496c13a5ecc18dd3f.png" /></p>
+<p>素材列表查询，前台可以传入查询条件 : 全部 , 收藏</p>
+<h4 id="341接口定义">3.4.1接口定义</h4>
+<ul>
+<li>根据收藏状态分页查询列表,图片根据创建时间倒序排列</li>
+</ul>
+<div><pre class="hljs"><code><span class="hljs-meta">@PostMapping("/list")</span>
+<span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">list</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> WmMaterialDto dto)</span>{
+    <span class="hljs-keyword">return</span> wmMaterialService.listByCollection(dto);
+}</code></pre></div>
+<p>WmMaterialDto</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.dto;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.PageRequestDto;
+<span class="hljs-keyword">import</span> lombok.Data;
+<span class="hljs-keyword">import</span> lombok.EqualsAndHashCode;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-meta">@EqualsAndHashCode(callSuper = true)</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WmMaterialDto</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">PageRequestDto</span> {
+    <span class="hljs-comment">/**
+     * 收藏状态
+     */</span>
+    <span class="hljs-keyword">private</span> Integer isCollection; <span class="hljs-comment">//1 查询收藏的</span>
+}</code></pre></div>
+<h4 id="342-service">3.4.2 service</h4>
+<p>接口</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.service;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.media.dto.WmMaterialDto;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmMaterial;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.IService;
+<span class="hljs-keyword">import</span> org.springframework.web.multipart.MultipartFile;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体图文素材信息表 服务类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-05-20
+ */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IWmMaterialService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;WmMaterial&gt; {
+
+    ResponseResult <span class="hljs-title function_">upload</span><span class="hljs-params">(MultipartFile file)</span>;
+
+    ResponseResult <span class="hljs-title function_">listByCollection</span><span class="hljs-params">(WmMaterialDto dto)</span>;
+}
+</code></pre></div>
+<p>实现类：</p>
+<div><pre class="hljs"><code>    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">listByCollection</span><span class="hljs-params">(WmMaterialDto dto)</span> {
+        <span class="hljs-comment">// 获取当前用户的id</span>
+        <span class="hljs-type">User</span> <span class="hljs-variable">user</span> <span class="hljs-operator">=</span> MediaThreadLocalUtil.get();
+        <span class="hljs-keyword">if</span> (user == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+        <span class="hljs-comment">// 构建查询条件</span>
+        LambdaQueryWrapper&lt;WmMaterial&gt; query = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaQueryWrapper</span>&lt;&gt;();
+        <span class="hljs-comment">// 判断是否传入了收藏状态</span>
+        <span class="hljs-keyword">if</span> (dto.getIsCollection() != <span class="hljs-literal">null</span>) {
+            query.eq(WmMaterial::getIsCollection, dto.getIsCollection());
+        }
+        <span class="hljs-comment">// 隐藏条件: 当前用户只能查询自己的图片</span>
+        query.eq(WmMaterial::getUserId, user.getUserId());
+        <span class="hljs-comment">// 对结果进行排序,根据创建时间倒序排列</span>
+        query.orderByDesc(WmMaterial::getCreatedTime);
+        <span class="hljs-comment">// 构建分页条件</span>
+        IPage&lt;WmMaterial&gt; page = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Page</span>&lt;&gt;(dto.getPage(), dto.getSize());
+        <span class="hljs-comment">// 分页查询</span>
+        IPage&lt;WmMaterial&gt; iPage = <span class="hljs-built_in">this</span>.page(page, query);
+        <span class="hljs-comment">// 构建通用的分页响应</span>
+        <span class="hljs-type">PageResponseResult</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PageResponseResult</span>(dto.getPage(), dto.getSize(),
+                iPage.getTotal(), iPage.getRecords());
+        <span class="hljs-keyword">return</span> result;
+    }</code></pre></div>
+<h4 id="343-测试">3.4.3 测试</h4>
+<p>使用前端页面测试</p>
+<h2 id="4-频道列表展示">4 频道列表展示</h2>
+<h3 id="41需求分析">4.1需求分析</h3>
+<p><img src="/_resources/d51767599fae4c5aa0103727ebd9fbe7.png" /></p>
+<p>文章展示列表页面打开的时候，默认自动加载频道列表数据进行展示，就是查询所有频道数据</p>
+<h3 id="42-接口定义">4.2 接口定义</h3>
+<ul>
+<li>查询所有频道</li>
+</ul>
+<h3 id="43-功能实现">4.3 功能实现</h3>
+<p>修改WmChannelController类，添加如下方法</p>
+<div><pre class="hljs"><code>    <span class="hljs-comment">/**
+     * 查询所有的频道
+     *
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-meta">@GetMapping("/channels")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">channels</span><span class="hljs-params">()</span> {
+        List&lt;WmChannel&gt; list = wmChannelService.list();
+        <span class="hljs-keyword">return</span> ResponseResult.okResult(list);
+    }</code></pre></div>
+<h3 id="44-测试">4.4 测试</h3>
+<p>使用postman测试或者直接打开页面测试即可</p>
+<h2 id="5-自媒体文章列表查询">5 自媒体文章列表查询</h2>
+<h3 id="51-需求分析">5.1 需求分析</h3>
+<p><img src="/_resources/775c6c22f7744bd0938b924bd61bb583.png" /></p>
+<h3 id="52-表结构和实体类">5.2 表结构和实体类</h3>
+<p>wm_news  自媒体文章表</p>
+<p><img src="/_resources/b4a99e874960410db6317f6b0c272548.png" /></p>
+<p>使用代码生成器生成实体类/mapper/service层</p>
+<h3 id="53-接口定义">5.3 接口定义</h3>
+<ul>
+<li>分页带条件查询自媒体文章列表 /api/v1/news/list</li>
+</ul>
+<p>定义请求对象 WmNewsDto</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.dto;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.PageRequestDto;
+<span class="hljs-keyword">import</span> lombok.Data;
+<span class="hljs-keyword">import</span> lombok.EqualsAndHashCode;
+
+<span class="hljs-keyword">import</span> java.util.Date;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-meta">@EqualsAndHashCode(callSuper = true)</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WmNewsPageDto</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">PageRequestDto</span> {
+
+    <span class="hljs-keyword">private</span> Integer status;<span class="hljs-comment">//状态</span>
+    <span class="hljs-keyword">private</span> Date beginPubDate;<span class="hljs-comment">//开始时间</span>
+    <span class="hljs-keyword">private</span> Date endPubDate;<span class="hljs-comment">//结束时间</span>
+    <span class="hljs-keyword">private</span> Integer channelId;<span class="hljs-comment">//所属频道ID</span>
+    <span class="hljs-keyword">private</span> String keyword;<span class="hljs-comment">//关键字</span>
+}</code></pre></div>
+<p>WmNewsController</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.controller;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.toolkit.StringUtils;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.media.dto.WmNewsPageDto;
+<span class="hljs-keyword">import</span> io.swagger.annotations.Api;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiOperation;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParam;
+<span class="hljs-keyword">import</span> io.swagger.annotations.ApiImplicitParams;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.*;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.metadata.IPage;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+<span class="hljs-keyword">import</span> com.heima.media.service.IWmNewsService;
+<span class="hljs-keyword">import</span> java.util.List;
+<span class="hljs-keyword">import</span> java.util.Map;
+
+<span class="hljs-keyword">import</span> org.springframework.web.bind.annotation.RestController;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体图文内容信息表 前端控制器
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-11-03
+ */</span>
+<span class="hljs-meta">@RestController</span>
+<span class="hljs-meta">@RequestMapping("/api/v1/news")</span>
+<span class="hljs-meta">@Api(tags = "自媒体图文内容信息表接口")</span>
+<span class="hljs-meta">@CrossOrigin</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WmNewsController</span>{
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IWmNewsService wmNewsService;
+
+    <span class="hljs-meta">@PostMapping("/list")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">listByCondition</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> WmNewsPageDto dto)</span> {
+        <span class="hljs-keyword">return</span> wmNewsService.listByCondition(dto);
+    }
+
+}
+
+</code></pre></div>
+<h3 id="54-功能实现">5.4 功能实现</h3>
+<p>IWmNewsService</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.service;
+
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.media.dto.WmNewsPageDto;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmNews;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.IService;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体图文内容信息表 服务类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-11-03
+ */</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IWmNewsService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;WmNews&gt; {
+
+    ResponseResult <span class="hljs-title function_">listByCondition</span><span class="hljs-params">(WmNewsPageDto dto)</span>;
+}
+</code></pre></div>
+<p>实现类 WmNewsServiceImpl</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.service.impl;
+
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.metadata.IPage;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+<span class="hljs-keyword">import</span> com.heima.common.dto.PageResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.dto.User;
+<span class="hljs-keyword">import</span> com.heima.common.enums.AppHttpCodeEnum;
+<span class="hljs-keyword">import</span> com.heima.common.util.MediaThreadLocalUtil;
+<span class="hljs-keyword">import</span> com.heima.media.dto.WmNewsPageDto;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmNews;
+<span class="hljs-keyword">import</span> com.heima.media.mapper.WmNewsMapper;
+<span class="hljs-keyword">import</span> com.heima.media.service.IWmNewsService;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+<span class="hljs-keyword">import</span> org.springframework.util.StringUtils;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体图文内容信息表 服务实现类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2021-11-03
+ */</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WmNewsServiceImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ServiceImpl</span>&lt;WmNewsMapper, WmNews&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IWmNewsService</span> {
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">listByCondition</span><span class="hljs-params">(WmNewsPageDto dto)</span> {
+        <span class="hljs-comment">// 构建查询条件</span>
+        LambdaQueryWrapper&lt;WmNews&gt; query = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaQueryWrapper</span>&lt;&gt;();
+        <span class="hljs-comment">// 根据文章状态查询</span>
+        <span class="hljs-keyword">if</span> (dto.getStatus() != <span class="hljs-literal">null</span>) {
+            query.eq(WmNews::getStatus, dto.getStatus());
+        }
+        <span class="hljs-comment">// 根据关键字模糊查询文章标题</span>
+        <span class="hljs-keyword">if</span> (!StringUtils.isEmpty(dto.getKeyword())) {
+            query.like(WmNews::getTitle, dto.getKeyword());
+        }
+        <span class="hljs-comment">// 根据频道列表查询</span>
+        <span class="hljs-keyword">if</span> (dto.getChannelId() != <span class="hljs-literal">null</span>) {
+            query.eq(WmNews::getChannelId, dto.getChannelId());
+        }
+        <span class="hljs-comment">// 发布日期 开始日期  -- 结束日期</span>
+        <span class="hljs-keyword">if</span> (dto.getBeginPubDate() != <span class="hljs-literal">null</span>) {
+            query.gt(WmNews::getPublishTime, dto.getBeginPubDate());
+        }
+        <span class="hljs-keyword">if</span> (dto.getEndPubDate() != <span class="hljs-literal">null</span>) {
+            query.lt(WmNews::getPublishTime, dto.getEndPubDate());
+        }
+        <span class="hljs-comment">// 当前用户</span>
+        <span class="hljs-type">User</span> <span class="hljs-variable">user</span> <span class="hljs-operator">=</span> MediaThreadLocalUtil.get();
+        <span class="hljs-keyword">if</span> (user == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+        query.eq(WmNews::getUserId, user.getUserId());
+        <span class="hljs-comment">// 按照文章发布时间倒序排列</span>
+        query.orderByDesc(WmNews::getPublishTime);
+        <span class="hljs-comment">// 构建分页条件</span>
+        IPage&lt;WmNews&gt; page = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Page</span>&lt;&gt;(dto.getPage(), dto.getSize());
+        <span class="hljs-comment">// 分页查询文章列表</span>
+        IPage&lt;WmNews&gt; iPage = <span class="hljs-built_in">this</span>.page(page, query);
+        <span class="hljs-comment">// 构建通用的分页响应对象</span>
+        <span class="hljs-type">PageResponseResult</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PageResponseResult</span>(dto.getPage(), dto.getSize(),
+                iPage.getTotal(), iPage.getRecords());
+        <span class="hljs-keyword">return</span> result;
+    }
+}
+</code></pre></div>
+<h3 id="55-测试">5.5 测试</h3>
+<p>打开页面进行测试</p>
+<h2 id="6-自媒体文章-发布-修改保存草稿">6 自媒体文章-发布、修改，保存草稿</h2>
+<h3 id="61-需求分析">6.1 需求分析</h3>
+<p><img src="/_resources/988a050767524c3bbd956291cc7f7f4a.png" /></p>
+<p>保存文章，除了需要wm_news表以外，还需要另外两张表</p>
+<p>wm_material  素材表</p>
+<p><img src="/_resources/bfc3eff2bdd04b3dba0fe14b3a9ce4b9.png" /></p>
+<p>wm_news_material  文章素材关系表</p>
+<p><img src="/_resources/8824cfc47d5647899fe60823494de202.png" /></p>
+<h3 id="62-思路分析">6.2 思路分析</h3>
+<ul>
+<li>
+<p>该功能为提交审核、修改（是否有id）、保存草稿的共有方法</p>
+</li>
+<li>
+<p>如果有id修改文章，先删除所有素材关联关系</p>
+</li>
+<li>
+<p>如果没有id，保存文章</p>
+</li>
+<li>
+<p>关联内容中的图片与素材的关系</p>
+</li>
+<li>
+<p>关联封面中的图片与素材的关系</p>
+<ul>
+<li>
+<p>封面图片如果选择是自动需要从内容中截取图片做为封面图片</p>
+<p>截取规则为：内容图片的个数小于等于2  则为单图截图一张图，内容图片大于等于3，则为多图，截图三张图，内容中没有图片，则为无图</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>提交数据格式如下:</p>
+<div><pre class="hljs"><code><span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">"title"</span><span class="hljs-punctuation">:</span><span class="hljs-string">"黑马头条项目背景"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"type"</span><span class="hljs-punctuation">:</span><span class="hljs-string">"1"</span><span class="hljs-punctuation">,</span><span class="hljs-comment">//这个 0 是无图  1 是单图  3 是多图  -1 是自动</span>
+    <span class="hljs-attr">"labels"</span><span class="hljs-punctuation">:</span><span class="hljs-string">"黑马头条"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"publishTime"</span><span class="hljs-punctuation">:</span><span class="hljs-string">"2020-03-14T11:35:49.000Z"</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"channelId"</span><span class="hljs-punctuation">:</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"images"</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span>
+        <span class="hljs-punctuation">{</span>
+            <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">78</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">"url"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">""</span>http<span class="hljs-punctuation">:</span><span class="hljs-comment">//192.168.200.130/group1/M00/00/00/wKjIgl5swbGATaSAAAEPfZfx6Iw790.png""</span>
+        <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-punctuation">{</span>
+            <span class="hljs-attr">"id"</span><span class="hljs-punctuation">:</span> <span class="hljs-number">79</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">"url"</span><span class="hljs-punctuation">:</span> <span class="hljs-string">""</span>http<span class="hljs-punctuation">:</span><span class="hljs-comment">//192.168.200.130/group1/M00/00/00/wKjIgl5swbGATaSAAAEPfZfx6Iw790.png""</span>
+        <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"status"</span><span class="hljs-punctuation">:</span><span class="hljs-number">1</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">"content"</span><span class="hljs-punctuation">:</span><span class="hljs-string">"[
+    {
+        "</span>type<span class="hljs-string">":"</span>text<span class="hljs-string">",
+        "</span>value<span class="hljs-string">":"</span>随着智能手机的普及，人们更加习惯于通过手机来看新闻。由于生活节奏的加快，很多人只能利用碎片时间来获取信息，因此，对于移动资讯客户端的需求也越来越高。黑马头条项目正是在这样背景下开发出来。黑马头条项目采用当下火热的微服务+大数据技术架构实现。本项目主要着手于获取最新最热新闻资讯，通过大数据分析用户喜好精确推送咨询新闻<span class="hljs-string">"
+    },
+    {
+        "</span>type<span class="hljs-string">":"</span>image<span class="hljs-string">",
+       "</span>id<span class="hljs-string">":110, "</span>value<span class="hljs-string">":"</span>http<span class="hljs-punctuation">:</span><span class="hljs-comment">//192.168.200.130/group1/M00/00/00/wKjIgl5swbGATaSAAAEPfZfx6Iw790.png"</span>
+    <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">]</span><span class="hljs-string">"
+}</span></code></pre></div>
+<h3 id="63-接口定义">6.3 接口定义</h3>
+<ul>
+<li>新增文章  /api/v1/news/submit</li>
+</ul>
+<p>在WmNewsController类中新增方法</p>
+<div><pre class="hljs"><code>    <span class="hljs-meta">@PostMapping("/submit")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">submit</span><span class="hljs-params">(<span class="hljs-meta">@RequestBody</span> WmNewsDto dto)</span> {
+        <span class="hljs-keyword">return</span> wmNewsService.submit(dto);
+    }</code></pre></div>
+<p>WmNewsDto</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.dto;
+
+<span class="hljs-keyword">import</span> lombok.Data;
+
+<span class="hljs-keyword">import</span> java.util.Date;
+<span class="hljs-keyword">import</span> java.util.List;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WmNewsDto</span> {
+
+    <span class="hljs-comment">/**
+     * id
+     */</span>
+    <span class="hljs-keyword">private</span> Integer id;
+     <span class="hljs-comment">/**
+     * 标题
+     */</span>
+    <span class="hljs-keyword">private</span> String title;
+     <span class="hljs-comment">/**
+     * 频道id
+     */</span>
+    <span class="hljs-keyword">private</span> Integer channelId;
+     <span class="hljs-comment">/**
+     * 标签
+     */</span>
+    <span class="hljs-keyword">private</span> String labels;
+     <span class="hljs-comment">/**
+     * 发布时间
+     */</span>
+    <span class="hljs-keyword">private</span> Date publishTime;
+     <span class="hljs-comment">/**
+     * 文章内容
+     */</span>
+    <span class="hljs-keyword">private</span> String content;
+     <span class="hljs-comment">/**
+     * 文章封面类型  0 无图 1 单图 3 多图 -1 自动
+     */</span>
+    <span class="hljs-keyword">private</span> Integer type;
+     <span class="hljs-comment">/**
+     * 是否上架  0 下架  1 上架
+     */</span>
+    <span class="hljs-keyword">private</span> Integer enable;
+     <span class="hljs-comment">/**
+     * 提交时间
+     */</span>
+    <span class="hljs-keyword">private</span> Date submitedTime;
+     <span class="hljs-comment">/**
+     * 状态 提交为1  草稿为0
+     */</span>
+    <span class="hljs-keyword">private</span> Integer status;
+     <span class="hljs-comment">/**
+     * 拒绝理由
+     */</span>
+    <span class="hljs-keyword">private</span> String reason;
+     <span class="hljs-comment">/**
+     * 封面图片列表 多张图以逗号隔开
+     */</span>
+    <span class="hljs-keyword">private</span> List&lt;ImageDto&gt; images;
+}
+</code></pre></div>
+<p>ImageDto</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.dto;
+
+<span class="hljs-keyword">import</span> lombok.AllArgsConstructor;
+<span class="hljs-keyword">import</span> lombok.Data;
+<span class="hljs-keyword">import</span> lombok.NoArgsConstructor;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-meta">@NoArgsConstructor</span>
+<span class="hljs-meta">@AllArgsConstructor</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ImageDto</span> {
+    <span class="hljs-comment">/**
+     * id
+     */</span>
+    <span class="hljs-keyword">private</span> Integer id;
+    <span class="hljs-comment">/**
+     * url
+     */</span>
+    <span class="hljs-keyword">private</span> String url;
+}
+</code></pre></div>
+<h3 id="64-业务层代码">6.4 业务层代码</h3>
+<p>在IWmNewsService类中新增方法</p>
+<div><pre class="hljs"><code>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title class_">IWmNewsService</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">IService</span>&lt;WmNews&gt; {
+
+    ResponseResult <span class="hljs-title function_">listByCondition</span><span class="hljs-params">(WmNewsPageDto dto)</span>;
+
+    ResponseResult <span class="hljs-title function_">submit</span><span class="hljs-params">(WmNewsDto dto)</span>;
+}
+</code></pre></div>
+<p>实现类：</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.service.impl;
+
+<span class="hljs-keyword">import</span> com.alibaba.fastjson.JSON;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.Wrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.core.metadata.IPage;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+<span class="hljs-keyword">import</span> com.heima.common.dto.PageResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.dto.ResponseResult;
+<span class="hljs-keyword">import</span> com.heima.common.dto.User;
+<span class="hljs-keyword">import</span> com.heima.common.enums.AppHttpCodeEnum;
+<span class="hljs-keyword">import</span> com.heima.common.util.MediaThreadLocalUtil;
+<span class="hljs-keyword">import</span> com.heima.media.dto.ContentDto;
+<span class="hljs-keyword">import</span> com.heima.media.dto.ImageDto;
+<span class="hljs-keyword">import</span> com.heima.media.dto.WmNewsDto;
+<span class="hljs-keyword">import</span> com.heima.media.dto.WmNewsPageDto;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmNews;
+<span class="hljs-keyword">import</span> com.heima.media.entity.WmNewsMaterial;
+<span class="hljs-keyword">import</span> com.heima.media.mapper.WmNewsMapper;
+<span class="hljs-keyword">import</span> com.heima.media.service.IWmNewsMaterialService;
+<span class="hljs-keyword">import</span> com.heima.media.service.IWmNewsService;
+<span class="hljs-keyword">import</span> com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+<span class="hljs-keyword">import</span> org.springframework.beans.BeanUtils;
+<span class="hljs-keyword">import</span> org.springframework.beans.factory.annotation.Autowired;
+<span class="hljs-keyword">import</span> org.springframework.stereotype.Service;
+<span class="hljs-keyword">import</span> org.springframework.util.StringUtils;
+
+<span class="hljs-keyword">import</span> java.util.ArrayList;
+<span class="hljs-keyword">import</span> java.util.Date;
+<span class="hljs-keyword">import</span> java.util.List;
+
+<span class="hljs-comment">/**
+ * &lt;p&gt;
+ * 自媒体图文内容信息表 服务实现类
+ * &lt;/p&gt;
+ *
+ * <span class="hljs-doctag">@author</span> mcm
+ * <span class="hljs-doctag">@since</span> 2022-04-12
+ */</span>
+<span class="hljs-meta">@Service</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WmNewsServiceImpl</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">ServiceImpl</span>&lt;WmNewsMapper, WmNews&gt; <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IWmNewsService</span> {
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">listByCondition</span><span class="hljs-params">(WmNewsPageDto dto)</span> {
+        <span class="hljs-comment">// 查询条件</span>
+        LambdaQueryWrapper&lt;WmNews&gt; query = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaQueryWrapper</span>&lt;&gt;();
+        <span class="hljs-comment">// 判断当前登录的用户</span>
+        <span class="hljs-comment">// 从本地线程查询用户</span>
+        <span class="hljs-type">User</span> <span class="hljs-variable">user</span> <span class="hljs-operator">=</span> MediaThreadLocalUtil.get();
+        <span class="hljs-keyword">if</span> (user == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+        query.eq(WmNews::getUserId, user.getUserId());
+        <span class="hljs-comment">// 判断状态是否为空</span>
+        <span class="hljs-keyword">if</span> (dto.getStatus() != <span class="hljs-literal">null</span>) {
+            query.eq(WmNews::getStatus, dto.getStatus());
+        }
+        <span class="hljs-comment">// 判断关键字是否为空</span>
+        <span class="hljs-keyword">if</span> (!StringUtils.isEmpty(dto.getKeyword())) {
+            query.like(WmNews::getTitle, dto.getKeyword());
+        }
+        <span class="hljs-comment">// 判断频道id</span>
+        <span class="hljs-keyword">if</span> (dto.getChannelId() != <span class="hljs-literal">null</span>) {
+            query.eq(WmNews::getChannelId, dto.getChannelId());
+        }
+        <span class="hljs-comment">// 判断发布日期</span>
+        <span class="hljs-keyword">if</span> (dto.getBeginPubDate() != <span class="hljs-literal">null</span>) {
+            query.ge(WmNews::getPublishTime, dto.getBeginPubDate());
+        }
+        <span class="hljs-keyword">if</span> (dto.getEndPubDate() != <span class="hljs-literal">null</span>) {
+            query.lt(WmNews::getPublishTime, dto.getEndPubDate());
+        }
+        <span class="hljs-comment">// 按照发布时间排序</span>
+        query.orderByDesc(WmNews::getPublishTime);
+        <span class="hljs-comment">// 分页查询</span>
+        IPage&lt;WmNews&gt; page = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Page</span>&lt;&gt;(dto.getPage(), dto.getSize());
+
+        IPage&lt;WmNews&gt; iPage = <span class="hljs-built_in">this</span>.page(page, query);
+        <span class="hljs-type">PageResponseResult</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">PageResponseResult</span>(dto.getPage(), dto.getSize(), iPage.getTotal(), iPage.getRecords());
+        <span class="hljs-keyword">return</span> result;
+    }
+
+    <span class="hljs-meta">@Override</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">submit</span><span class="hljs-params">(WmNewsDto dto)</span> {
+
+        <span class="hljs-comment">// 从本地线程查询用户</span>
+        <span class="hljs-type">User</span> <span class="hljs-variable">user</span> <span class="hljs-operator">=</span> MediaThreadLocalUtil.get();
+        <span class="hljs-keyword">if</span> (user == <span class="hljs-literal">null</span>) {
+            <span class="hljs-keyword">return</span> ResponseResult.errorResult(AppHttpCodeEnum.NEED_LOGIN);
+        }
+
+        <span class="hljs-comment">// 判断dto是否包含文章id</span>
+        <span class="hljs-comment">// 有id,是更新文章,需要先删除已有文章-素材关联关系</span>
+        <span class="hljs-keyword">if</span> (dto.getId() != <span class="hljs-literal">null</span>) {
+            deleteRelation(dto.getId());
+        }
+
+        <span class="hljs-comment">// 没有id,新增文章</span>
+        <span class="hljs-type">WmNews</span> <span class="hljs-variable">wmNews</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">WmNews</span>();
+        BeanUtils.copyProperties(dto, wmNews);
+        wmNews.setUserId(user.getUserId());
+        wmNews.setCreatedTime(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>());
+        wmNews.setSubmitedTime(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>());
+        wmNews.setImages(JSON.toJSONString(dto.getImages()));
+        <span class="hljs-comment">// 从前端传递的内容中提取图片</span>
+        List&lt;ImageDto&gt; contentImages = getImagesFromContent(wmNews.getContent());
+        <span class="hljs-keyword">if</span> (dto.getType() == -<span class="hljs-number">1</span>) {
+            <span class="hljs-comment">// 需要从内容中自动提取图片作为封面图片</span>
+            <span class="hljs-comment">// 判断内容图片的个数</span>
+            <span class="hljs-keyword">if</span> (contentImages.size() &lt;= <span class="hljs-number">0</span>) {
+                <span class="hljs-comment">// 修改类型为无图</span>
+                wmNews.setType(<span class="hljs-number">0</span>);
+            } <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (contentImages.size() &lt; <span class="hljs-number">3</span>) {
+                <span class="hljs-comment">// 修改类型为单图</span>
+                wmNews.setType(<span class="hljs-number">1</span>);
+                <span class="hljs-comment">// 从内容图片中取第一张图片作为封面</span>
+                List&lt;ImageDto&gt; imageList = contentImages.subList(<span class="hljs-number">0</span>, <span class="hljs-number">1</span>);
+                wmNews.setImages(JSON.toJSONString(imageList));
+            } <span class="hljs-keyword">else</span> {
+                <span class="hljs-comment">// 修改类型为多图</span>
+                wmNews.setType(<span class="hljs-number">3</span>);
+                <span class="hljs-comment">// 从内容图片中取前3张图片作为封面</span>
+                List&lt;ImageDto&gt; imageList = contentImages.subList(<span class="hljs-number">0</span>, <span class="hljs-number">3</span>);
+                wmNews.setImages(JSON.toJSONString(imageList));
+            }
+        }
+
+        <span class="hljs-comment">// 保存文章</span>
+        <span class="hljs-comment">// this.save(wmNews);</span>
+        <span class="hljs-built_in">this</span>.saveOrUpdate(wmNews);
+        <span class="hljs-comment">// 判断是否为草稿</span>
+        <span class="hljs-keyword">if</span> (dto.getStatus() != <span class="hljs-number">0</span>) {
+            <span class="hljs-comment">// 不为草稿,保存文章-素材关联关系  包含内容关联和封面关联</span>
+            <span class="hljs-comment">// 添加封面关联</span>
+            List&lt;ImageDto&gt; coverImages = JSON.parseArray(wmNews.getImages(), ImageDto.class);
+            saveRelation(coverImages, wmNews.getId(), <span class="hljs-number">1</span>);
+
+            <span class="hljs-comment">// 添加内容关联</span>
+            saveRelation(contentImages, wmNews.getId(), <span class="hljs-number">0</span>);
+        }
+        <span class="hljs-keyword">return</span> ResponseResult.okResult();
+    }
+
+    <span class="hljs-comment">/**
+     * 删除文章-素材关联
+     *
+     * <span class="hljs-doctag">@param</span> id
+     */</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">deleteRelation</span><span class="hljs-params">(Integer id)</span> {
+        LambdaQueryWrapper&lt;WmNewsMaterial&gt; query = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LambdaQueryWrapper</span>&lt;&gt;();
+        query.eq(WmNewsMaterial::getNewsId, id);
+        newsMaterialService.remove(query);
+    }
+
+    <span class="hljs-comment">/**
+     * 从前端传递的内容中提取图片
+     *
+     * <span class="hljs-doctag">@param</span> content
+     * <span class="hljs-doctag">@return</span>
+     */</span>
+    <span class="hljs-keyword">private</span> List&lt;ImageDto&gt; <span class="hljs-title function_">getImagesFromContent</span><span class="hljs-params">(String content)</span> {
+        List&lt;ImageDto&gt; contentImages = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();
+        List&lt;ContentDto&gt; dtos = JSON.parseArray(content, ContentDto.class);
+        <span class="hljs-keyword">for</span> (ContentDto dto : dtos) {
+            <span class="hljs-keyword">if</span> (dto.getType().equals(<span class="hljs-string">"image"</span>)) {
+                <span class="hljs-type">String</span> <span class="hljs-variable">url</span> <span class="hljs-operator">=</span> dto.getValue();
+                <span class="hljs-type">Integer</span> <span class="hljs-variable">id</span> <span class="hljs-operator">=</span> dto.getId();
+                <span class="hljs-type">ImageDto</span> <span class="hljs-variable">imageDto</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">ImageDto</span>(id, url);
+                contentImages.add(imageDto);
+            }
+        }
+        <span class="hljs-keyword">return</span> contentImages;
+    }
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="hljs-keyword">private</span> IWmNewsMaterialService newsMaterialService;
+
+    <span class="hljs-comment">/**
+     * 保存关联关系
+     *
+     * <span class="hljs-doctag">@param</span> images
+     * <span class="hljs-doctag">@param</span> newsId
+     * <span class="hljs-doctag">@param</span> type
+     */</span>
+    <span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">saveRelation</span><span class="hljs-params">(List&lt;ImageDto&gt; images, Integer newsId, <span class="hljs-type">int</span> type)</span> {
+        <span class="hljs-type">int</span> <span class="hljs-variable">ord</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">for</span> (ImageDto dto : images) {
+            <span class="hljs-type">WmNewsMaterial</span> <span class="hljs-variable">entity</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">WmNewsMaterial</span>();
+            entity.setMaterialId(dto.getId());
+            entity.setNewsId(newsId);
+            entity.setType(type);
+            entity.setOrd(ord);
+            newsMaterialService.save(entity);
+            ord++;
+        }
+    }
+}
+</code></pre></div>
+<p>ContentDto</p>
+<div><pre class="hljs"><code><span class="hljs-keyword">package</span> com.heima.media.dto;
+
+<span class="hljs-keyword">import</span> lombok.Data;
+
+<span class="hljs-meta">@Data</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">ContentDto</span> {
+    <span class="hljs-comment">/**
+     * 类型  text:文本  image:图片
+     */</span>
+    <span class="hljs-keyword">private</span> String type;
+    <span class="hljs-comment">/**
+     * 值
+     */</span>
+    <span class="hljs-keyword">private</span> String value;
+    <span class="hljs-comment">/**
+     * 如果有图片,传的是图片对应的素材ID
+     */</span>
+    <span class="hljs-keyword">private</span> Integer id;
+}
+</code></pre></div>
+<h3 id="65-测试">6.5 测试</h3>
+<p>打开前端工程联调</p>
+<h2 id="7-自媒体文章-查看">7 自媒体文章-查看</h2>
+<h3 id="71-需求分析">7.1 需求分析</h3>
+<p><img src="/_resources/8809c7445dd34871b2fe15a27c3ae4f8.png" /></p>
+<p>点击修改的时候，就是根据文章id查询，跳转至编辑页面进行展示</p>
+<p><img src="/_resources/e52fa25e58fc4b76a195c19a2f379adc.png" /></p>
+<h3 id="72-接口定义">7.2 接口定义</h3>
+<ul>
+<li>根据id获取文章信息</li>
+</ul>
+<p>在WmNewsController新增方法 查询文章</p>
+<div><pre class="hljs"><code>    <span class="hljs-meta">@GetMapping("/{id}")</span>
+    <span class="hljs-keyword">public</span> ResponseResult <span class="hljs-title function_">getById</span><span class="hljs-params">(<span class="hljs-meta">@PathVariable("id")</span> Integer id)</span> {
+        <span class="hljs-type">WmNews</span> <span class="hljs-variable">wmNews</span> <span class="hljs-operator">=</span> wmNewsService.getById(id);
+        <span class="hljs-keyword">return</span> ResponseResult.okResult(wmNews);
+    }</code></pre></div>
+</div>
+      </article>
+    </div>
+  </body>
+</html>
